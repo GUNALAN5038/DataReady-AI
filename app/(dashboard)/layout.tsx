@@ -16,12 +16,12 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50/50 dark:bg-zinc-950">
-      <Suspense fallback={<div className="w-64 border-r bg-white dark:bg-zinc-950 h-full" />}>
+    <div className="flex h-screen overflow-hidden bg-background">
+      <Suspense fallback={<div className="w-64 border-r border-border/80 bg-sidebar h-full" />}>
         <Sidebar />
       </Suspense>
-      <main className="flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-7xl p-8">
+      <main className="flex-1 overflow-y-auto bg-gradient-to-b from-indigo-50/20 via-background to-background dark:from-indigo-950/10 dark:via-background dark:to-background">
+        <div className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">
           {children}
         </div>
       </main>

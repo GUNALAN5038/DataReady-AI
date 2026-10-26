@@ -11,6 +11,7 @@ import { AIInsightsTab } from '@/components/datasets/ai-insights-tab'
 import { DatasetChat } from '@/components/datasets/dataset-chat'
 import { HistoryTab } from '@/components/datasets/history-tab'
 import { CompareTab } from '@/components/datasets/compare-tab'
+import { cn } from '@/lib/utils'
 
 export default async function DatasetPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -176,15 +177,23 @@ export default async function DatasetPage({ params }: { params: Promise<{ id: st
   return (
     <div className="space-y-8">
       {/* Header Bar */}
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 pb-2 border-b border-border/60">
         <div>
-          <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-3xl font-bold tracking-tight">{dataset.name}</h1>
-            <Badge variant="outline" className="uppercase font-mono text-xs">{dataset.file_type || 'CSV'}</Badge>
-            <Badge className="bg-purple-600 hover:bg-purple-700 text-white font-mono text-xs">Version {currentVersion}</Badge>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">{dataset.name}</h1>
+            <span className="uppercase font-mono text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200/50">
+              {dataset.file_type || 'CSV'}
+            </span>
+            <span className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-mono text-xs font-semibold px-2.5 py-0.5 rounded-full shadow-2xs">
+              Version {currentVersion}
+            </span>
           </div>
-          <p className="text-muted-foreground mt-2 text-sm">
-            Uploaded on {new Date(dataset.created_at).toLocaleDateString()} • {dataset.row_count?.toLocaleString()} rows, {dataset.column_count} columns
+          <p className="text-muted-foreground mt-2 text-xs sm:text-sm flex items-center gap-2 flex-wrap">
+            <span>Uploaded on {new Date(dataset.created_at).toLocaleDateString()}</span>
+            <span>•</span>
+            <span className="font-medium text-foreground">{dataset.row_count?.toLocaleString()} rows</span>
+            <span>•</span>
+            <span className="font-medium text-foreground">{dataset.column_count} columns</span>
           </p>
         </div>
         <div className="flex gap-2">
@@ -194,29 +203,29 @@ export default async function DatasetPage({ params }: { params: Promise<{ id: st
 
       {/* Main Tabs Navigation */}
       <Tabs defaultValue="insights" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 h-auto p-1 gap-1">
-          <TabsTrigger value="insights" className="py-2 text-xs sm:text-sm flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5 text-purple-500" />
+        <TabsList className="flex flex-wrap items-center gap-1.5 h-auto p-1.5 bg-muted/60 dark:bg-zinc-900/60 rounded-xl border border-border/60">
+          <TabsTrigger value="insights" className="py-2 px-3 text-xs sm:text-sm font-medium rounded-lg flex items-center gap-1.5 transition-all">
+            <Sparkles className="h-3.5 w-3.5 text-violet-500" />
             <span>AI Insights</span>
           </TabsTrigger>
-          <TabsTrigger value="readiness" className="py-2 text-xs sm:text-sm flex items-center gap-1.5">
+          <TabsTrigger value="readiness" className="py-2 px-3 text-xs sm:text-sm font-medium rounded-lg flex items-center gap-1.5 transition-all">
             <Gauge className="h-3.5 w-3.5 text-blue-500" />
             <span>ML Readiness</span>
           </TabsTrigger>
-          <TabsTrigger value="recommendations" className="py-2 text-xs sm:text-sm flex items-center gap-1.5">
+          <TabsTrigger value="recommendations" className="py-2 px-3 text-xs sm:text-sm font-medium rounded-lg flex items-center gap-1.5 transition-all">
             <Lightbulb className="h-3.5 w-3.5 text-amber-500" />
             <span>Recommendations</span>
           </TabsTrigger>
-          <TabsTrigger value="preview" className="py-2 text-xs sm:text-sm">Preview</TabsTrigger>
-          <TabsTrigger value="summary" className="py-2 text-xs sm:text-sm">Summary</TabsTrigger>
-          <TabsTrigger value="quality" className="py-2 text-xs sm:text-sm">Data Quality</TabsTrigger>
-          <TabsTrigger value="transform" className="py-2 text-xs sm:text-sm">Transform</TabsTrigger>
-          <TabsTrigger value="compare" className="py-2 text-xs sm:text-sm flex items-center gap-1.5">
-            <Scale className="h-3.5 w-3.5 text-blue-500" />
+          <TabsTrigger value="preview" className="py-2 px-3 text-xs sm:text-sm font-medium rounded-lg transition-all">Preview</TabsTrigger>
+          <TabsTrigger value="summary" className="py-2 px-3 text-xs sm:text-sm font-medium rounded-lg transition-all">Summary</TabsTrigger>
+          <TabsTrigger value="quality" className="py-2 px-3 text-xs sm:text-sm font-medium rounded-lg transition-all">Data Quality</TabsTrigger>
+          <TabsTrigger value="transform" className="py-2 px-3 text-xs sm:text-sm font-medium rounded-lg transition-all">Transform</TabsTrigger>
+          <TabsTrigger value="compare" className="py-2 px-3 text-xs sm:text-sm font-medium rounded-lg flex items-center gap-1.5 transition-all">
+            <Scale className="h-3.5 w-3.5 text-teal-500" />
             <span>Compare</span>
           </TabsTrigger>
-          <TabsTrigger value="history" className="py-2 text-xs sm:text-sm">History</TabsTrigger>
-          <TabsTrigger value="chat" className="py-2 text-xs sm:text-sm">AI Chat</TabsTrigger>
+          <TabsTrigger value="history" className="py-2 px-3 text-xs sm:text-sm font-medium rounded-lg transition-all">History</TabsTrigger>
+          <TabsTrigger value="chat" className="py-2 px-3 text-xs sm:text-sm font-medium rounded-lg transition-all">AI Chat</TabsTrigger>
         </TabsList>
 
         {/* 1. AI Insights */}
@@ -226,7 +235,8 @@ export default async function DatasetPage({ params }: { params: Promise<{ id: st
 
         {/* 2. ML Readiness (Deterministic Score & Component Breakdown) */}
         <TabsContent value="readiness" className="mt-6 space-y-6">
-          <Card>
+          <Card className="border-border/80 overflow-hidden shadow-xs">
+            <div className="h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-500" />
             <CardHeader className="pb-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
@@ -239,26 +249,26 @@ export default async function DatasetPage({ params }: { params: Promise<{ id: st
                   </CardDescription>
                 </div>
                 <Badge className={
-                  mlOverallScore >= 90 ? 'bg-emerald-600 text-white text-sm' :
-                  mlOverallScore >= 70 ? 'bg-green-600 text-white text-sm' :
-                  mlOverallScore >= 50 ? 'bg-yellow-600 text-white text-sm' :
-                  mlOverallScore >= 30 ? 'bg-orange-600 text-white text-sm' : 'bg-red-600 text-white text-sm'
+                  mlOverallScore >= 90 ? 'bg-emerald-600 text-white text-sm font-semibold px-3 py-1' :
+                  mlOverallScore >= 70 ? 'bg-blue-600 text-white text-sm font-semibold px-3 py-1' :
+                  mlOverallScore >= 50 ? 'bg-amber-600 text-white text-sm font-semibold px-3 py-1' :
+                  mlOverallScore >= 30 ? 'bg-orange-600 text-white text-sm font-semibold px-3 py-1' : 'bg-rose-600 text-white text-sm font-semibold px-3 py-1'
                 }>
                   {mlCategory} ({mlOverallScore}/100)
                 </Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm font-medium">
-                  <span>Overall Readiness</span>
-                  <span>{mlOverallScore}%</span>
+              <div className="space-y-2 p-4 bg-muted/30 rounded-xl border border-border/60">
+                <div className="flex justify-between text-sm font-semibold text-foreground">
+                  <span>Overall Health &amp; ML Fitness</span>
+                  <span className="text-base font-extrabold bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent">{mlOverallScore}%</span>
                 </div>
-                <div className="w-full bg-muted rounded-full h-3">
+                <div className="w-full bg-muted dark:bg-zinc-800 rounded-full h-3 overflow-hidden">
                   <div
                     className={`h-3 rounded-full transition-all duration-500 ${
-                      mlOverallScore >= 70 ? 'bg-emerald-600' :
-                      mlOverallScore >= 50 ? 'bg-yellow-500' : 'bg-red-500'
+                      mlOverallScore >= 70 ? 'bg-gradient-to-r from-emerald-500 to-teal-500' :
+                      mlOverallScore >= 50 ? 'bg-gradient-to-r from-amber-500 to-orange-500' : 'bg-gradient-to-r from-rose-500 to-red-600'
                     }`}
                     style={{ width: `${mlOverallScore}%` }}
                   />
@@ -266,31 +276,31 @@ export default async function DatasetPage({ params }: { params: Promise<{ id: st
               </div>
 
               {/* 5 Component Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                <div className="p-4 rounded-xl border bg-card space-y-1 text-center">
-                  <div className="text-xs text-muted-foreground font-semibold uppercase">Completeness</div>
-                  <div className="text-2xl font-bold">{mlComponents.completeness}%</div>
-                  <div className="text-[11px] text-muted-foreground">Weight: 25%</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+                <div className="p-4 rounded-xl border border-border/70 bg-card hover:border-blue-400/50 transition-all space-y-1.5 text-center shadow-2xs">
+                  <div className="text-[11px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wider">Completeness</div>
+                  <div className="text-2xl font-extrabold text-foreground">{mlComponents.completeness}%</div>
+                  <div className="text-[11px] text-muted-foreground font-mono">Weight: 25%</div>
                 </div>
-                <div className="p-4 rounded-xl border bg-card space-y-1 text-center">
-                  <div className="text-xs text-muted-foreground font-semibold uppercase">Consistency</div>
-                  <div className="text-2xl font-bold">{mlComponents.consistency}%</div>
-                  <div className="text-[11px] text-muted-foreground">Weight: 20%</div>
+                <div className="p-4 rounded-xl border border-border/70 bg-card hover:border-indigo-400/50 transition-all space-y-1.5 text-center shadow-2xs">
+                  <div className="text-[11px] text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-wider">Consistency</div>
+                  <div className="text-2xl font-extrabold text-foreground">{mlComponents.consistency}%</div>
+                  <div className="text-[11px] text-muted-foreground font-mono">Weight: 20%</div>
                 </div>
-                <div className="p-4 rounded-xl border bg-card space-y-1 text-center">
-                  <div className="text-xs text-muted-foreground font-semibold uppercase">Validity</div>
-                  <div className="text-2xl font-bold">{mlComponents.validity}%</div>
-                  <div className="text-[11px] text-muted-foreground">Weight: 20%</div>
+                <div className="p-4 rounded-xl border border-border/70 bg-card hover:border-violet-400/50 transition-all space-y-1.5 text-center shadow-2xs">
+                  <div className="text-[11px] text-violet-600 dark:text-violet-400 font-bold uppercase tracking-wider">Validity</div>
+                  <div className="text-2xl font-extrabold text-foreground">{mlComponents.validity}%</div>
+                  <div className="text-[11px] text-muted-foreground font-mono">Weight: 20%</div>
                 </div>
-                <div className="p-4 rounded-xl border bg-card space-y-1 text-center">
-                  <div className="text-xs text-muted-foreground font-semibold uppercase">Uniqueness</div>
-                  <div className="text-2xl font-bold">{mlComponents.uniqueness}%</div>
-                  <div className="text-[11px] text-muted-foreground">Weight: 15%</div>
+                <div className="p-4 rounded-xl border border-border/70 bg-card hover:border-teal-400/50 transition-all space-y-1.5 text-center shadow-2xs">
+                  <div className="text-[11px] text-teal-600 dark:text-teal-400 font-bold uppercase tracking-wider">Uniqueness</div>
+                  <div className="text-2xl font-extrabold text-foreground">{mlComponents.uniqueness}%</div>
+                  <div className="text-[11px] text-muted-foreground font-mono">Weight: 15%</div>
                 </div>
-                <div className="p-4 rounded-xl border bg-card space-y-1 text-center">
-                  <div className="text-xs text-muted-foreground font-semibold uppercase">Feature Quality</div>
-                  <div className="text-2xl font-bold">{mlComponents.featureQuality}%</div>
-                  <div className="text-[11px] text-muted-foreground">Weight: 20%</div>
+                <div className="p-4 rounded-xl border border-border/70 bg-card hover:border-amber-400/50 transition-all space-y-1.5 text-center shadow-2xs">
+                  <div className="text-[11px] text-amber-600 dark:text-amber-400 font-bold uppercase tracking-wider">Feature Quality</div>
+                  <div className="text-2xl font-extrabold text-foreground">{mlComponents.featureQuality}%</div>
+                  <div className="text-[11px] text-muted-foreground font-mono">Weight: 20%</div>
                 </div>
               </div>
             </CardContent>
@@ -299,8 +309,8 @@ export default async function DatasetPage({ params }: { params: Promise<{ id: st
 
         {/* 3. Recommendations */}
         <TabsContent value="recommendations" className="mt-6 space-y-6">
-          <Card>
-            <CardHeader>
+          <Card className="border-border/80 shadow-xs">
+            <CardHeader className="border-b border-border/60 pb-4">
               <CardTitle className="text-xl flex items-center gap-2">
                 <Lightbulb className="h-5 w-5 text-amber-500" />
                 Data Quality Recommendations
@@ -309,32 +319,50 @@ export default async function DatasetPage({ params }: { params: Promise<{ id: st
                 Prioritized algorithmic suggestions to optimize this dataset for machine learning models.
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               {recommendationsList.length === 0 ? (
-                <div className="p-6 text-center text-muted-foreground space-y-2">
+                <div className="p-8 text-center text-muted-foreground space-y-3 bg-emerald-50/30 dark:bg-emerald-950/20 rounded-2xl border border-emerald-200/50">
                   <CheckCircle2 className="h-10 w-10 mx-auto text-emerald-600" />
                   <p className="font-semibold text-foreground">Dataset is in great shape!</p>
-                  <p className="text-xs">No critical rule-based quality issues detected for Version {currentVersion}.</p>
+                  <p className="text-xs text-muted-foreground">No critical rule-based quality issues detected for Version {currentVersion}.</p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {recommendationsList.map((rec, i) => (
-                    <div key={i} className="p-4 rounded-xl border bg-card space-y-2">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-semibold text-sm">{rec.problem}</span>
-                        <Badge variant={
-                          rec.priority === 'Critical' ? 'destructive' :
-                          rec.priority === 'High' ? 'default' : 'secondary'
-                        } className="text-xs">
-                          {rec.priority} Priority
-                        </Badge>
+                  {recommendationsList.map((rec, i) => {
+                    const isCritical = rec.priority === 'Critical'
+                    const isHigh = rec.priority === 'High'
+                    const isMed = rec.priority === 'Medium'
+                    return (
+                      <div 
+                        key={i} 
+                        className={cn(
+                          "p-4 rounded-xl border bg-card space-y-2.5 transition-all shadow-2xs",
+                          isCritical ? "border-l-4 border-l-rose-500 bg-rose-50/15 dark:bg-rose-950/15" :
+                          isHigh ? "border-l-4 border-l-orange-500 bg-orange-50/15 dark:bg-orange-950/15" :
+                          isMed ? "border-l-4 border-l-amber-500 bg-amber-50/15 dark:bg-amber-950/15" :
+                          "border-l-4 border-l-blue-500 bg-blue-50/15 dark:bg-blue-950/15"
+                        )}
+                      >
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <span className="font-semibold text-sm text-foreground">{rec.problem}</span>
+                          <span className={cn(
+                            "text-[11px] font-semibold uppercase px-2.5 py-0.5 rounded-full border",
+                            isCritical ? "bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 border-rose-200" :
+                            isHigh ? "bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300 border-orange-200" :
+                            isMed ? "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300 border-amber-200" :
+                            "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border-blue-200"
+                          )}>
+                            {rec.priority} Priority
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{rec.explanation}</p>
+                        <div className="text-xs font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50/70 dark:bg-indigo-950/50 p-3 rounded-lg border border-indigo-200/60 dark:border-indigo-900/60 flex items-start gap-2">
+                          <span className="font-semibold shrink-0">Action:</span>
+                          <span>{rec.action}</span>
+                        </div>
                       </div>
-                      <p className="text-xs text-muted-foreground">{rec.explanation}</p>
-                      <div className="text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 p-2.5 rounded-lg border border-blue-200 dark:border-blue-900">
-                        <span className="font-semibold">Recommended Action:</span> {rec.action}
-                      </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
             </CardContent>
@@ -343,28 +371,28 @@ export default async function DatasetPage({ params }: { params: Promise<{ id: st
 
         {/* 2. Preview */}
         <TabsContent value="preview" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Data Preview</CardTitle>
-              <CardDescription>Displaying active dataset records (Version {currentVersion}, first {sampleData.length} rows)</CardDescription>
+          <Card className="border-border/80 shadow-xs overflow-hidden">
+            <CardHeader className="border-b border-border/60 pb-4">
+              <CardTitle className="text-base font-semibold">Data Preview</CardTitle>
+              <CardDescription className="text-xs">Displaying active dataset records (Version {currentVersion}, first {sampleData.length} rows)</CardDescription>
             </CardHeader>
-            <CardContent className="overflow-x-auto">
+            <CardContent className="p-0 overflow-x-auto">
               {sampleData.length > 0 ? (
                 <table className="w-full text-sm text-left border-collapse">
-                  <thead className="text-xs uppercase bg-muted/60 text-muted-foreground border-b">
+                  <thead className="text-[11px] uppercase tracking-wider bg-muted/70 text-muted-foreground border-b border-border/70 sticky top-0">
                     <tr>
                       {columns.map((col: { name: string }, i: number) => (
-                        <th key={i} className="px-4 py-3 border whitespace-nowrap font-semibold">{col.name}</th>
+                        <th key={i} className="px-4 py-3 border-r border-border/50 last:border-r-0 whitespace-nowrap font-semibold">{col.name}</th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-border/60">
                     {sampleData.map((row: Record<string, unknown>, i: number) => (
-                      <tr key={i} className="border-b last:border-0 hover:bg-muted/30">
+                      <tr key={i} className="hover:bg-indigo-50/30 dark:hover:bg-indigo-950/20 transition-colors">
                         {columns.map((col: { name: string }, j: number) => (
-                          <td key={j} className="px-4 py-2.5 border whitespace-nowrap max-w-[220px] truncate text-xs">
+                          <td key={j} className="px-4 py-2.5 border-r border-border/40 last:border-r-0 whitespace-nowrap max-w-[220px] truncate text-xs text-foreground/90 font-mono">
                             {row[col.name] === null || row[col.name] === undefined ? (
-                              <span className="text-muted-foreground italic">null</span>
+                              <span className="text-muted-foreground/60 italic font-sans">null</span>
                             ) : (
                               String(row[col.name])
                             )}
@@ -375,7 +403,7 @@ export default async function DatasetPage({ params }: { params: Promise<{ id: st
                   </tbody>
                 </table>
               ) : (
-                <p className="text-sm text-muted-foreground py-4">No preview data available for this version.</p>
+                <p className="text-sm text-muted-foreground p-8 text-center">No preview data available for this version.</p>
               )}
             </CardContent>
           </Card>

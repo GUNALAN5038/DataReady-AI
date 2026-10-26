@@ -148,41 +148,41 @@ export function HistoryTab({
     <div className="space-y-6">
       {/* Success Notification */}
       {successMessage && (
-        <Alert className="border-emerald-500 text-emerald-800 bg-emerald-50 dark:bg-emerald-950/30 dark:text-emerald-300">
-          <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-          <AlertTitle className="font-semibold">Rollback Succeeded</AlertTitle>
-          <AlertDescription>{successMessage}</AlertDescription>
+        <Alert className="border-emerald-500/40 text-emerald-800 dark:text-emerald-300 bg-emerald-50/80 dark:bg-emerald-950/30 rounded-xl">
+          <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+          <AlertTitle className="font-semibold text-sm">Rollback Succeeded</AlertTitle>
+          <AlertDescription className="text-xs">{successMessage}</AlertDescription>
         </Alert>
       )}
 
       {/* Error Notification */}
       {errorMessage && (
-        <Alert variant="destructive" className="border-red-500 bg-red-50 dark:bg-red-950/30">
-          <AlertCircle className="h-5 w-5" />
-          <AlertTitle className="font-semibold">Rollback Failed</AlertTitle>
-          <AlertDescription>{errorMessage}</AlertDescription>
+        <Alert variant="destructive" className="border-rose-500/40 bg-rose-50/80 dark:bg-rose-950/30 rounded-xl">
+          <AlertCircle className="h-5 w-5 text-rose-600 dark:text-rose-400" />
+          <AlertTitle className="font-semibold text-sm">Rollback Failed</AlertTitle>
+          <AlertDescription className="text-xs">{errorMessage}</AlertDescription>
         </Alert>
       )}
 
-      <Card>
+      <Card className="border-border/80 rounded-2xl shadow-xs">
         <CardHeader className="pb-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <CardTitle className="text-xl flex items-center gap-2">
-                <HistoryIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+              <CardTitle className="text-xl flex items-center gap-2 text-foreground">
+                <HistoryIcon className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                 Transformation &amp; Version History
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs mt-1">
                 Track every modification made to this dataset. Revert to any prior version safely without losing audit history.
               </CardDescription>
             </div>
-            <Badge variant="outline" className="font-mono text-xs self-start sm:self-auto">
+            <Badge variant="outline" className="font-mono text-xs self-start sm:self-auto px-2.5 py-1 border-border/80 bg-background/60">
               Current: v{currentVersion}
             </Badge>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {timeline.map(item => {
               const isCurrent = item.version === currentVersion
 
@@ -191,15 +191,15 @@ export function HistoryTab({
                   key={item.version}
                   className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border transition-all ${
                     isCurrent
-                      ? 'border-purple-300 dark:border-purple-900 bg-purple-50/40 dark:bg-purple-950/20 shadow-xs'
-                      : 'border-border bg-card/60'
+                      ? 'border-indigo-300 dark:border-indigo-800/80 bg-indigo-50/30 dark:bg-indigo-950/20 shadow-xs'
+                      : 'border-border/70 bg-card/60 hover:bg-card/90'
                   }`}
                 >
                   <div className="space-y-1.5 flex-1 pr-4">
                     <div className="flex items-center gap-2.5 flex-wrap">
                       <Badge
                         variant={isCurrent ? 'default' : 'secondary'}
-                        className={`font-mono text-xs ${isCurrent ? 'bg-purple-600 text-white' : ''}`}
+                        className={`font-mono text-xs ${isCurrent ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs shadow-indigo-500/20' : ''}`}
                       >
                         v{item.version}
                       </Badge>
@@ -207,7 +207,7 @@ export function HistoryTab({
                         {item.isOriginal ? 'Original Dataset (Raw Upload)' : formatTransformationLabel(item.type, item.config)}
                       </span>
                       {isCurrent && (
-                        <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-medium">
+                        <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 text-[11px] font-medium shadow-none">
                           Current Active Version
                         </Badge>
                       )}
@@ -227,7 +227,7 @@ export function HistoryTab({
 
                   <div className="mt-3 sm:mt-0 flex items-center gap-2 flex-shrink-0">
                     {isCurrent ? (
-                      <Button variant="outline" size="sm" disabled className="text-xs">
+                      <Button variant="outline" size="sm" disabled className="text-xs rounded-lg opacity-70">
                         Active
                       </Button>
                     ) : (
@@ -236,7 +236,7 @@ export function HistoryTab({
                         size="sm"
                         onClick={() => handleOpenRevertDialog(item.version)}
                         disabled={isReverting}
-                        className="text-xs flex items-center gap-1.5 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-300 dark:hover:bg-purple-950/40"
+                        className="text-xs flex items-center gap-1.5 rounded-lg border-border/80 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-300 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300 transition-colors"
                       >
                         <RotateCcw className="h-3.5 w-3.5" />
                         Revert to v{item.version}
@@ -252,38 +252,38 @@ export function HistoryTab({
 
       {/* Confirmation Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md rounded-2xl border-border/80 bg-card/95 backdrop-blur-xs">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-lg">
-              <RotateCcw className="h-5 w-5 text-purple-600" />
+            <DialogTitle className="flex items-center gap-2 text-lg text-foreground">
+              <RotateCcw className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
               Revert dataset to Version {selectedTargetVersion}?
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-xs">
               This will restore the dataset contents from Version {selectedTargetVersion} as the newest version. Your current version will not be deleted or overwritten.
             </DialogDescription>
           </DialogHeader>
 
           {/* Rollback Details Card */}
-          <div className="p-4 rounded-xl border bg-muted/40 space-y-3 text-xs">
+          <div className="p-4 rounded-xl border border-border/80 bg-muted/30 space-y-3 text-xs">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground font-medium flex items-center gap-1.5">
                 <FileSpreadsheet className="h-4 w-4 text-blue-500" /> Current Version:
               </span>
-              <Badge variant="outline" className="font-mono">Version {currentVersion}</Badge>
+              <Badge variant="outline" className="font-mono text-xs">Version {currentVersion}</Badge>
             </div>
 
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground font-medium flex items-center gap-1.5">
-                <Layers className="h-4 w-4 text-purple-500" /> Target Version:
+                <Layers className="h-4 w-4 text-indigo-500" /> Target Version:
               </span>
-              <Badge variant="secondary" className="font-mono">Version {selectedTargetVersion}</Badge>
+              <Badge variant="secondary" className="font-mono text-xs">Version {selectedTargetVersion}</Badge>
             </div>
 
-            <div className="pt-2 border-t flex items-center justify-between">
+            <div className="pt-2 border-t border-border/60 flex items-center justify-between">
               <span className="font-bold text-foreground flex items-center gap-1.5">
                 <ArrowRight className="h-4 w-4 text-emerald-500" /> Resulting Version:
               </span>
-              <Badge className="bg-purple-600 hover:bg-purple-700 text-white font-mono font-bold">
+              <Badge className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-mono font-bold text-xs shadow-xs shadow-indigo-500/20">
                 Version {currentVersion + 1}
               </Badge>
             </div>
@@ -295,6 +295,7 @@ export function HistoryTab({
               size="sm"
               onClick={() => setIsDialogOpen(false)}
               disabled={isReverting}
+              className="rounded-lg"
             >
               Cancel
             </Button>
@@ -302,7 +303,7 @@ export function HistoryTab({
               size="sm"
               onClick={handleConfirmRevert}
               disabled={isReverting}
-              className="bg-purple-600 hover:bg-purple-700 text-white flex items-center gap-1.5"
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-xs shadow-indigo-500/20 flex items-center gap-1.5 rounded-lg"
             >
               {isReverting ? (
                 <>

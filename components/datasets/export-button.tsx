@@ -61,36 +61,36 @@ export function ExportButton({ datasetId, currentVersion = 0 }: ExportButtonProp
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className={cn(buttonVariants({ variant: 'outline' }), 'flex items-center gap-2 cursor-pointer')}
+        className={cn(buttonVariants({ variant: 'outline' }), 'flex items-center gap-2 cursor-pointer rounded-xl h-9 text-xs font-semibold border-border/80 shadow-xs')}
         disabled={isExporting}
       >
-        {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+        {isExporting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />}
         <span>Export</span>
-        <ChevronDown className="h-3.5 w-3.5 opacity-70" />
+        <ChevronDown className="h-3.5 w-3.5 opacity-60" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-64">
-        <DropdownMenuLabel className="text-xs font-semibold uppercase text-muted-foreground">
+      <DropdownMenuContent align="end" className="w-64 rounded-xl border-border/80 shadow-lg p-1.5">
+        <DropdownMenuLabel className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground px-2 py-1.5">
           Current Transformed (v{currentVersion})
         </DropdownMenuLabel>
-        <DropdownMenuItem onClick={() => handleExport('current', 'csv')} disabled={isExporting} className="flex items-center gap-2 cursor-pointer">
+        <DropdownMenuItem onClick={() => handleExport('current', 'csv')} disabled={isExporting} className="flex items-center gap-2.5 cursor-pointer rounded-lg text-xs py-2 px-2.5">
           <FileText className="h-4 w-4 text-blue-500" />
           <span>Download as CSV</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleExport('current', 'xlsx')} disabled={isExporting} className="flex items-center gap-2 cursor-pointer">
+        <DropdownMenuItem onClick={() => handleExport('current', 'xlsx')} disabled={isExporting} className="flex items-center gap-2.5 cursor-pointer rounded-lg text-xs py-2 px-2.5">
           <FileSpreadsheet className="h-4 w-4 text-emerald-500" />
           <span>Download as Excel (.xlsx)</span>
         </DropdownMenuItem>
 
-        <DropdownMenuSeparator />
+        <DropdownMenuSeparator className="my-1 border-border/60" />
 
-        <DropdownMenuLabel className="text-xs font-semibold uppercase text-muted-foreground">
+        <DropdownMenuLabel className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground px-2 py-1.5">
           Original Raw Upload
         </DropdownMenuLabel>
-        <DropdownMenuItem onClick={() => handleExport('original', 'csv')} disabled={isExporting} className="flex items-center gap-2 cursor-pointer">
+        <DropdownMenuItem onClick={() => handleExport('original', 'csv')} disabled={isExporting} className="flex items-center gap-2.5 cursor-pointer rounded-lg text-xs py-2 px-2.5">
           <FileText className="h-4 w-4 text-muted-foreground" />
           <span>Original File as CSV</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleExport('original', 'xlsx')} disabled={isExporting} className="flex items-center gap-2 cursor-pointer">
+        <DropdownMenuItem onClick={() => handleExport('original', 'xlsx')} disabled={isExporting} className="flex items-center gap-2.5 cursor-pointer rounded-lg text-xs py-2 px-2.5">
           <FileSpreadsheet className="h-4 w-4 text-muted-foreground" />
           <span>Original File as Excel (.xlsx)</span>
         </DropdownMenuItem>

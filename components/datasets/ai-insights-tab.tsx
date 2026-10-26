@@ -216,14 +216,14 @@ export function AIInsightsTab({ datasetId, analysis, dataset }: AIInsightsTabPro
   const getSeverityBadge = (severity: SeverityLevel) => {
     switch (severity) {
       case 'CRITICAL':
-        return <Badge variant="destructive" className="font-semibold uppercase text-xs">Critical</Badge>
+        return <Badge className="bg-rose-500/15 hover:bg-rose-500/25 text-rose-700 dark:text-rose-300 border border-rose-500/30 font-semibold uppercase text-[10px] tracking-wider shadow-none">Critical</Badge>
       case 'HIGH':
-        return <Badge className="bg-orange-600 hover:bg-orange-700 text-white font-semibold uppercase text-xs">High</Badge>
+        return <Badge className="bg-orange-500/15 hover:bg-orange-500/25 text-orange-700 dark:text-orange-300 border border-orange-500/30 font-semibold uppercase text-[10px] tracking-wider shadow-none">High</Badge>
       case 'MEDIUM':
-        return <Badge className="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold uppercase text-xs">Medium</Badge>
+        return <Badge className="bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-300 border border-amber-500/30 font-semibold uppercase text-[10px] tracking-wider shadow-none">Medium</Badge>
       case 'LOW':
       default:
-        return <Badge variant="secondary" className="font-semibold uppercase text-xs">Low</Badge>
+        return <Badge variant="secondary" className="font-semibold uppercase text-[10px] tracking-wider text-muted-foreground">Low</Badge>
     }
   }
 
@@ -231,24 +231,24 @@ export function AIInsightsTab({ datasetId, analysis, dataset }: AIInsightsTabPro
   const getPriorityBadge = (priority: PriorityLevel) => {
     switch (priority) {
       case 'CRITICAL':
-        return <Badge variant="destructive" className="font-semibold uppercase text-xs">Critical Priority</Badge>
+        return <Badge className="bg-rose-500/15 hover:bg-rose-500/25 text-rose-700 dark:text-rose-300 border border-rose-500/30 font-semibold uppercase text-[10px] tracking-wider shadow-none">Critical Priority</Badge>
       case 'HIGH':
-        return <Badge className="bg-orange-600 hover:bg-orange-700 text-white font-semibold uppercase text-xs">High Priority</Badge>
+        return <Badge className="bg-orange-500/15 hover:bg-orange-500/25 text-orange-700 dark:text-orange-300 border border-orange-500/30 font-semibold uppercase text-[10px] tracking-wider shadow-none">High Priority</Badge>
       case 'MEDIUM':
-        return <Badge className="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold uppercase text-xs">Medium Priority</Badge>
+        return <Badge className="bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-300 border border-amber-500/30 font-semibold uppercase text-[10px] tracking-wider shadow-none">Medium Priority</Badge>
       case 'LOW':
       default:
-        return <Badge variant="secondary" className="font-semibold uppercase text-xs">Low Priority</Badge>
+        return <Badge variant="secondary" className="font-semibold uppercase text-[10px] tracking-wider text-muted-foreground">Low Priority</Badge>
     }
   }
 
   // Visual helper for score category
   const getScoreCategoryBadge = (score: number) => {
-    if (score >= 90) return <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white">Excellent</Badge>
-    if (score >= 70) return <Badge className="bg-green-600 hover:bg-green-700 text-white">Good</Badge>
-    if (score >= 50) return <Badge className="bg-yellow-600 hover:bg-yellow-700 text-white">Fair</Badge>
-    if (score >= 30) return <Badge className="bg-orange-600 hover:bg-orange-700 text-white">Needs Improvement</Badge>
-    return <Badge variant="destructive">Poor</Badge>
+    if (score >= 90) return <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 font-medium shadow-none">Excellent</Badge>
+    if (score >= 70) return <Badge className="bg-teal-500/15 text-teal-700 dark:text-teal-300 border border-teal-500/30 font-medium shadow-none">Good</Badge>
+    if (score >= 50) return <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 font-medium shadow-none">Fair</Badge>
+    if (score >= 30) return <Badge className="bg-orange-500/15 text-orange-700 dark:text-orange-300 border border-orange-500/30 font-medium shadow-none">Needs Improvement</Badge>
+    return <Badge className="bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/30 font-medium shadow-none">Poor</Badge>
   }
 
   const mlScore = (analysis?.ml_readiness_score as number) ?? 0
@@ -256,33 +256,33 @@ export function AIInsightsTab({ datasetId, analysis, dataset }: AIInsightsTabPro
   return (
     <div className="space-y-8">
       {/* Action / Status Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl border bg-card/60 backdrop-blur-sm shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl border border-indigo-200/60 dark:border-indigo-900/40 bg-gradient-to-r from-blue-50/50 via-indigo-50/30 to-violet-50/40 dark:from-indigo-950/20 dark:via-zinc-900 dark:to-violet-950/20 backdrop-blur-xs shadow-xs">
+        <div className="flex items-center gap-3.5">
+          <div className="h-11 w-11 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-600 text-white flex items-center justify-center shadow-xs shadow-indigo-500/25 flex-shrink-0">
             <BrainCircuit className="h-6 w-6" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold tracking-tight">AI-Powered Insights</h2>
-              <Badge variant="outline" className="text-xs">
+              <h2 className="text-lg font-bold tracking-tight text-foreground">AI-Powered Insights</h2>
+              <Badge variant="outline" className="text-xs font-mono border-border/80 bg-background/60">
                 v{Number(dataset.current_version || 0)}
               </Badge>
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground mt-0.5">
               Automated data quality analysis, ML readiness evaluation, and smart recommendations.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 self-start sm:self-auto">
           <Button
             variant="outline"
             size="sm"
             onClick={() => refreshInsights(false)}
             disabled={loading || isRefreshing}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 rounded-xl border-border/80 hover:bg-background/80 text-xs font-medium"
           >
-            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin text-indigo-600' : ''}`} />
             {isRefreshing ? 'Regenerating...' : 'Regenerate Insights'}
           </Button>
         </div>
@@ -290,10 +290,10 @@ export function AIInsightsTab({ datasetId, analysis, dataset }: AIInsightsTabPro
 
       {/* Success Banner */}
       {transformationSuccess && (
-        <Alert className="border-emerald-500 text-emerald-800 bg-emerald-50 dark:bg-emerald-950/30 dark:text-emerald-300">
-          <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-          <AlertTitle className="font-semibold">Success</AlertTitle>
-          <AlertDescription>{transformationSuccess}</AlertDescription>
+        <Alert className="border-emerald-500/40 text-emerald-800 dark:text-emerald-300 bg-emerald-50/80 dark:bg-emerald-950/30 rounded-xl">
+          <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+          <AlertTitle className="font-semibold text-sm">Success</AlertTitle>
+          <AlertDescription className="text-xs">{transformationSuccess}</AlertDescription>
         </Alert>
       )}
 
@@ -673,12 +673,14 @@ export function AIInsightsTab({ datasetId, analysis, dataset }: AIInsightsTabPro
                     return (
                       <div 
                         key={idx} 
-                        className={`p-5 rounded-xl border transition-all ${
+                        className={`p-5 rounded-2xl border transition-all ${
                           rec.priority === 'CRITICAL' 
-                            ? 'border-red-300 dark:border-red-900/60 bg-red-50/20' 
+                            ? 'border-border/80 border-l-4 border-l-rose-500 bg-rose-50/20 dark:bg-rose-950/10' 
                             : rec.priority === 'HIGH'
-                            ? 'border-orange-300 dark:border-orange-900/60 bg-orange-50/20'
-                            : 'border-border bg-card'
+                            ? 'border-border/80 border-l-4 border-l-orange-500 bg-orange-50/20 dark:bg-orange-950/10'
+                            : rec.priority === 'MEDIUM'
+                            ? 'border-border/80 border-l-4 border-l-amber-500 bg-amber-50/20 dark:bg-amber-950/10'
+                            : 'border-border/80 border-l-4 border-l-indigo-500 bg-card/80'
                         }`}
                       >
                         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
@@ -698,11 +700,11 @@ export function AIInsightsTab({ datasetId, analysis, dataset }: AIInsightsTabPro
                               {rec.reason}
                             </p>
 
-                            <div className="p-3 rounded-lg bg-muted/60 border text-xs text-foreground font-medium flex items-start gap-2">
-                              <Wand2 className="h-4 w-4 text-purple-500 mt-0.5 flex-shrink-0" />
+                            <div className="p-3 rounded-xl bg-muted/50 border border-border/60 text-xs text-foreground font-medium flex items-start gap-2">
+                              <Wand2 className="h-4 w-4 text-indigo-500 mt-0.5 flex-shrink-0" />
                               <div>
-                                <span className="font-bold">Recommended Action: </span>
-                                {rec.action}
+                                <span className="font-bold text-foreground">Recommended Action: </span>
+                                <span className="text-muted-foreground">{rec.action}</span>
                               </div>
                             </div>
                           </div>
@@ -714,22 +716,22 @@ export function AIInsightsTab({ datasetId, analysis, dataset }: AIInsightsTabPro
                                 size="sm"
                                 onClick={() => handleApplyTransformation(rec, idx)}
                                 disabled={applyingIndex !== null}
-                                className="bg-purple-600 hover:bg-purple-700 text-white shadow-sm flex items-center gap-1.5 whitespace-nowrap"
+                                className="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 hover:from-blue-700 hover:via-indigo-700 hover:to-violet-700 text-white shadow-xs shadow-indigo-500/20 flex items-center gap-1.5 whitespace-nowrap rounded-xl text-xs"
                               >
                                 {isApplying ? (
                                   <>
-                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
                                     Applying Fix...
                                   </>
                                 ) : (
                                   <>
-                                    <Wand2 className="h-4 w-4" />
+                                    <Wand2 className="h-3.5 w-3.5" />
                                     {suggestion.button_label || 'Apply Transformation'}
                                   </>
                                 )}
                               </Button>
                             ) : (
-                              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border bg-muted/40 text-muted-foreground text-xs font-medium">
+                              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/80 bg-muted/40 text-muted-foreground text-xs font-medium">
                                 <Info className="h-3.5 w-3.5 text-muted-foreground" />
                                 Manual action recommended
                               </div>

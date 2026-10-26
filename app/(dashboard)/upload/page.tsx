@@ -243,31 +243,35 @@ export default function UploadPage() {
     if (ext === 'csv') return <FileText className="h-10 w-10 text-blue-500 mb-4" />
     if (ext === 'xlsx' || ext === 'xls') return <FileSpreadsheet className="h-10 w-10 text-green-500 mb-4" />
     if (ext === 'json') return <FileJson className="h-10 w-10 text-yellow-500 mb-4" />
-    return <FileText className="h-10 w-10 text-blue-500 mb-4" />
+    return <FileText className="h-8 w-8 text-blue-600 dark:text-blue-400" />
   }
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Upload Dataset</h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-2">Upload your data for instant quality analysis and ML readiness scoring.</p>
+    <div className="max-w-3xl mx-auto space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Upload Dataset</h1>
+        <p className="text-muted-foreground mt-1 text-sm">
+          Upload your tabular data for instant quality inspection, automated profiling, and ML readiness scoring.
+        </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Select File</CardTitle>
-          <CardDescription>Supported formats: CSV, XLSX, JSON</CardDescription>
+      <Card className="border-border/80 shadow-xs overflow-hidden">
+        <CardHeader className="bg-muted/15 border-b border-border/60 pb-4">
+          <CardTitle className="text-base font-semibold">Select or Drop Data File</CardTitle>
+          <CardDescription className="text-xs">
+            Supports structured formats: CSV, Excel (.xlsx, .xls), and JSON arrays
+          </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           {error && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertDescription>{error}</AlertDescription>
+            <Alert variant="destructive" className="mb-5">
+              <AlertDescription className="text-sm font-medium">{error}</AlertDescription>
             </Alert>
           )}
           
           {!file ? (
             <div 
-              className="border-2 border-dashed border-gray-300 dark:border-zinc-700 rounded-lg p-12 text-center hover:bg-gray-50 dark:hover:bg-zinc-900/50 transition-colors cursor-pointer"
+              className="border-2 border-dashed border-indigo-200/90 dark:border-indigo-900/60 rounded-2xl p-10 sm:p-14 text-center bg-gradient-to-b from-indigo-50/25 via-background to-background dark:from-indigo-950/20 hover:border-indigo-500/70 hover:bg-indigo-50/40 dark:hover:bg-indigo-950/40 transition-all cursor-pointer group"
               onDragOver={handleDragOver}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
@@ -280,22 +284,37 @@ export default function UploadPage() {
                 accept=".csv,.xlsx,.xls,.json"
               />
               <div className="flex flex-col items-center">
-                {getFileIcon()}
-                <p className="text-lg font-medium">Click or drag file to this area to upload</p>
-                <p className="text-sm text-gray-500 mt-1">Maximum file sizes: CSV (50MB), Excel (25MB), JSON (50MB)</p>
+                <div className="h-16 w-16 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400 flex items-center justify-center mb-4 group-hover:scale-105 group-hover:bg-indigo-500/15 transition-all shadow-xs">
+                  <UploadIcon className="h-8 w-8" />
+                </div>
+                <p className="text-base font-semibold text-foreground">Click to browse or drag &amp; drop your dataset file</p>
+                <p className="text-xs text-muted-foreground mt-1 max-w-sm">
+                  Files are securely stored in your private workspace and processed with client/server validation.
+                </p>
+                <div className="flex flex-wrap gap-2 justify-center mt-5">
+                  <span className="text-[11px] font-mono font-medium px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200/50">CSV ≤ 50MB</span>
+                  <span className="text-[11px] font-mono font-medium px-2.5 py-1 rounded-md bg-teal-50 text-teal-700 dark:bg-teal-950 dark:text-teal-300 border border-teal-200/50">Excel ≤ 25MB</span>
+                  <span className="text-[11px] font-mono font-medium px-2.5 py-1 rounded-md bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300 border border-amber-200/50">JSON ≤ 50MB</span>
+                </div>
               </div>
             </div>
           ) : (
-            <div className="border rounded-lg p-6 flex items-center justify-between bg-gray-50 dark:bg-zinc-900/50">
+            <div className="border border-border/80 rounded-xl p-5 flex items-center justify-between bg-muted/30">
               <div className="flex items-center space-x-4">
-                {getFileIcon()}
+                <div className="h-12 w-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                  {getFileIcon()}
+                </div>
                 <div>
-                  <h3 className="font-medium text-lg">{file.name}</h3>
-                  <p className="text-sm text-gray-500">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+                  <h3 className="font-semibold text-base text-foreground">{file.name}</h3>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                    <span>{(file.size / (1024 * 1024)).toFixed(2)} MB</span>
+                    <span>•</span>
+                    <span className="uppercase font-mono">{file.name.split('.').pop()}</span>
+                  </div>
                 </div>
               </div>
               {!isUploading && (
-                <Button variant="ghost" size="icon" onClick={() => setFile(null)}>
+                <Button variant="ghost" size="icon" onClick={() => setFile(null)} className="text-muted-foreground hover:text-destructive">
                   <X className="h-5 w-5" />
                 </Button>
               )}
@@ -303,22 +322,34 @@ export default function UploadPage() {
           )}
 
           {isUploading && (
-            <div className="mt-6 space-y-2">
-              <div className="flex justify-between text-sm font-medium">
-                <span>Processing & Uploading...</span>
+            <div className="mt-6 space-y-2 p-4 bg-indigo-50/30 dark:bg-indigo-950/30 rounded-xl border border-indigo-200/40 dark:border-indigo-900/40">
+              <div className="flex justify-between text-xs font-semibold text-indigo-700 dark:text-indigo-300">
+                <span className="flex items-center gap-1.5">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  Processing schema &amp; uploading...
+                </span>
                 <span>{progress}%</span>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-zinc-800 rounded-full h-2.5">
-                <div className="bg-blue-600 h-2.5 rounded-full transition-all duration-300" style={{ width: `${progress}%` }}></div>
+              <div className="w-full bg-muted dark:bg-zinc-800 rounded-full h-2.5 overflow-hidden">
+                <div 
+                  className="bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500 h-2.5 rounded-full transition-all duration-300" 
+                  style={{ width: `${progress}%` }}
+                />
               </div>
             </div>
           )}
         </CardContent>
-        <CardFooter className="flex justify-end space-x-4">
-          <Button variant="outline" onClick={() => router.push('/dashboard')} disabled={isUploading}>Cancel</Button>
-          <Button onClick={handleUpload} disabled={!file || isUploading}>
+        <CardFooter className="flex justify-end gap-3 bg-muted/15 border-t border-border/60 py-4">
+          <Button variant="outline" onClick={() => router.push('/dashboard')} disabled={isUploading} className="text-xs font-medium">
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleUpload} 
+            disabled={!file || isUploading}
+            className="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 hover:from-blue-700 hover:to-violet-700 text-white shadow-sm hover:shadow-md transition-all text-xs font-semibold"
+          >
             {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isUploading ? 'Uploading...' : 'Upload & Analyze'}
+            {isUploading ? 'Uploading & Analyzing...' : 'Upload & Analyze Dataset'}
           </Button>
         </CardFooter>
       </Card>

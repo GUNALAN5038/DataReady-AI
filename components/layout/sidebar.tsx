@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { logout } from '@/app/(auth)/actions'
+import { ThemeToggleCompact } from '@/components/theme-toggle'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -160,11 +161,15 @@ export function Sidebar() {
         </div>
       </div>
 
-      <div className="border-t border-border/70 p-3 bg-muted/20">
+      <div className="border-t border-border/70 p-3 bg-muted/20 space-y-1">
+        <div className="flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-muted-foreground">
+          <span className="font-medium">Theme</span>
+          <ThemeToggleCompact />
+        </div>
         <form action={logout}>
           <button
             type="submit"
-            className="group flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive dark:hover:bg-destructive/20 transition-colors"
+            className="group flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive dark:hover:bg-destructive/20 transition-colors cursor-pointer"
           >
             <LogOut className="mr-3 h-4.5 w-4.5 text-muted-foreground/70 group-hover:text-destructive transition-colors" aria-hidden="true" />
             <span>Sign out</span>

@@ -18,8 +18,10 @@ import {
   CheckCircle2, 
   AlertCircle, 
   Trash2,
-  ExternalLink
+  ExternalLink,
+  Palette
 } from 'lucide-react'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 interface UserProfile {
   id: string
@@ -41,7 +43,7 @@ function SettingsContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const tabParam = searchParams.get('tab')
-  const activeTab = (tabParam === 'keys' || tabParam === 'security' || tabParam === 'profile') ? tabParam : 'profile'
+  const activeTab = (tabParam === 'keys' || tabParam === 'security' || tabParam === 'profile' || tabParam === 'appearance') ? tabParam : 'profile'
 
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [fullName, setFullName] = useState('')
@@ -257,7 +259,7 @@ function SettingsContent() {
       </div>
 
       <Tabs value={activeTab} onValueChange={(val) => router.replace(`/settings?tab=${val}`)} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 max-w-md p-1 bg-muted/70 rounded-xl border border-border/70">
+        <TabsList className="grid w-full grid-cols-4 max-w-lg p-1 bg-muted/70 rounded-xl border border-border/70">
           <TabsTrigger value="profile" className="flex items-center gap-1.5 text-xs font-semibold rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs">
             <User className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" /> Profile
           </TabsTrigger>
@@ -266,6 +268,9 @@ function SettingsContent() {
           </TabsTrigger>
           <TabsTrigger value="keys" className="flex items-center gap-1.5 text-xs font-semibold rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs">
             <Key className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" /> AI Keys
+          </TabsTrigger>
+          <TabsTrigger value="appearance" className="flex items-center gap-1.5 text-xs font-semibold rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs">
+            <Palette className="h-3.5 w-3.5 text-amber-500" /> Theme
           </TabsTrigger>
         </TabsList>
 
@@ -498,6 +503,44 @@ function SettingsContent() {
                 </Button>
               </CardFooter>
             </form>
+          </Card>
+        </TabsContent>
+
+        {/* 4. Appearance & Theme Settings */}
+        <TabsContent value="appearance" className="mt-6 space-y-6">
+          <Card className="rounded-2xl border-border/80 shadow-xs">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg flex items-center gap-2 text-foreground">
+                <div className="h-8 w-8 rounded-xl bg-amber-50 dark:bg-amber-950/50 flex items-center justify-center text-amber-600 dark:text-amber-400">
+                  <Palette className="h-4 w-4" />
+                </div>
+                Appearance &amp; Theme
+              </CardTitle>
+              <CardDescription className="text-xs mt-1">
+                Customize how DataReady AI looks on your device. Choose between light, dark, or sync with your system preference.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-foreground">Interface Theme</label>
+                <p className="text-xs text-muted-foreground">
+                  Select your preferred color theme. Changes take effect immediately and are saved across browser sessions.
+                </p>
+                <div className="pt-2">
+                  <ThemeToggle />
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-border/80 bg-muted/30 p-4 text-xs text-muted-foreground space-y-2">
+                <div className="font-semibold text-foreground flex items-center gap-1.5">
+                  <span>💡 Tip:</span>
+                  <span>Quick toggle is also available</span>
+                </div>
+                <p>
+                  You can quickly toggle between themes anytime using the sun/moon button in the lower-left sidebar footer without navigating back to Settings.
+                </p>
+              </div>
+            </CardContent>
           </Card>
         </TabsContent>
       </Tabs>

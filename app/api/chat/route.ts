@@ -251,23 +251,34 @@ export async function POST(req: Request) {
 
     if (error instanceof Error) {
       const msg = error.message
-      const lower = msg.toLowerCase()
+      const cleanMsg = msg.replace(/https?:\/\/[^\s]+/g, '[URL]').replace(/key=[a-zA-Z0-9_\-]+/gi, 'key=[REDACTED]').trim()
+      const lower = cleanMsg.toLowerCase()
 
       if (lower.includes('ai provider not configured') || lower.includes('failed to decrypt saved api key')) {
         statusCode = 503
-        userMessage = msg
-      } else if (lower.includes('api key not valid') || lower.includes('api_key_invalid') || lower.includes('unauthenticated')) {
+        userMessage = cleanMsg
+      } else if (
+        lower.includes('api key not valid') ||
+        lower.includes('api_key_invalid') ||
+        lower.includes('unauthenticated') ||
+        lower.includes('permission_denied')
+      ) {
         statusCode = 401
-        userMessage = 'Your Google Gemini API key is invalid. Please verify and re-enter your key in Settings.'
-      } else if (lower.includes('resource_exhausted') || lower.includes('quota') || lower.includes('rate limit')) {
+        userMessage = 'Your Google Gemini API key is invalid or unauthorized (401). Please verify and re-enter your key in Settings > AI Keys.'
+      } else if (lower.includes('resource_exhausted') || lower.includes('quota') || lower.includes('rate limit') || lower.includes('429')) {
         statusCode = 429
-        userMessage = 'Google Gemini API rate limit or quota exceeded. Please wait a moment and try again.'
-      } else if (lower.includes('not found') || lower.includes('models/')) {
+        userMessage = 'Google Gemini API rate limit or quota exceeded (429). Please wait a moment and try again.'
+      } else if (lower.includes('no longer available') || lower.includes('deprecated') || lower.includes('not supported for generatecontent')) {
+        statusCode = 404
+        userMessage = 'The requested Gemini model is discontinued or unsupported (404). Please use a supported model such as gemini-3.6-flash or gemini-3.8-flash.'
+      } else if (lower.includes('not found') || lower.includes('not_found')) {
+        statusCode = 404
+        userMessage = 'The requested Gemini model or endpoint was not found (404). Please try again.'
+      } else if (lower.includes('unavailable') || lower.includes('service unavailable') || lower.includes('503') || lower.includes('502')) {
         statusCode = 502
-        userMessage = 'The requested Gemini model is currently unavailable or misconfigured. Please try again.'
+        userMessage = 'Google Gemini service is temporarily unavailable (502). Please try again shortly.'
       } else {
-        // Sanitize any potential internal URLs or query params
-        userMessage = msg.replace(/https?:\/\/[^\s]+/g, '').trim() || userMessage
+        userMessage = cleanMsg || userMessage
       }
     }
 

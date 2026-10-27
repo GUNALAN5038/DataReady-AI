@@ -64,14 +64,44 @@ test('Source code does NOT contain hardcoded API keys', () => {
   }
 })
 
-test('Gemini model configuration normalizes modelId to contain models/ prefix', async () => {
-  const { getGeminiModel } = jiti('./lib/ai/gemini')
-  const model1 = await getGeminiModel('mock-test-key-12345', 'gemini-1.5-flash')
-  assert(model1.modelId.startsWith('models/'), 'modelId must start with models/ to avoid Google API 404 Not Found')
-  assert.strictEqual(model1.modelId, 'models/gemini-1.5-flash')
+test('Gemini model configuration normalizes modelId to contain models/ prefix without double prefixing', async () => {
+  const { getGeminiModel, normalizeModelId } = jiti('./lib/ai/gemini')
 
-  const model2 = await getGeminiModel('mock-test-key-12345', 'models/gemini-1.5-pro')
-  assert.strictEqual(model2.modelId, 'models/gemini-1.5-pro')
+  // gemini-3.6-flash normalized
+  const model1 = await getGeminiModel('mock-test-key-12345', 'gemini-3.6-flash')
+  assert(model1.modelId.startsWith('models/'), 'modelId must start with models/ to avoid Google API 404 Not Found')
+  assert.strictEqual(model1.modelId, 'models/gemini-3.6-flash')
+
+  // models/gemini-3.8-flash preserved exactly once
+  const model2 = await getGeminiModel('mock-test-key-12345', 'models/gemini-3.8-flash')
+  assert.strictEqual(model2.modelId, 'models/gemini-3.8-flash')
+
+  // Double prefix eliminated
+  assert.strictEqual(normalizeModelId('models/models/gemini-3.6-flash'), 'models/gemini-3.6-flash')
+})
+
+test('normalizeModelId rejects obsolete models with clear configuration error', () => {
+  const { normalizeModelId } = jiti('./lib/ai/gemini')
+  const obsoleteList = [
+    'gemini-1.5-flash',
+    'models/gemini-1.5-pro',
+    'gemini-1.5-pro-latest',
+    'gemini-2.0-flash',
+    'gemini-2.5-flash',
+  ]
+  for (const obsolete of obsoleteList) {
+    assert.throws(
+      () => normalizeModelId(obsolete),
+      /deprecated and no longer supported/
+    )
+  }
+})
+
+test('normalizeModelId rejects malformed model identifiers', () => {
+  const { normalizeModelId } = jiti('./lib/ai/gemini')
+  assert.throws(() => normalizeModelId(''), /required|cannot be empty/)
+  assert.throws(() => normalizeModelId('   '), /cannot be empty/)
+  assert.throws(() => normalizeModelId('../invalid/path'), /Malformed model identifier/)
 })
 
 test('getGeminiModel throws clear actionable error when no API key is provided', async () => {

@@ -1,86 +1,167 @@
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
 
-// In-memory cache for resolved model per API key to avoid repeated ListModels roundtrips
+// In-memory cache for resolved model per API key to avoid repeated probe roundtrips
 const resolvedModelCache = new Map<string, string>()
 
 /**
- * Dynamically queries Google Generative Language API to discover available models for the provided key,
- * ensuring we never request a 404/deprecated model name.
+ * Obsolete or discontinued models that must NEVER be used as defaults
+ * or allowed to silently override active models.
+ */
+export const OBSOLETE_MODELS = new Set([
+  'gemini-1.0-pro',
+  'gemini-1.5-flash',
+  'gemini-1.5-flash-latest',
+  'gemini-1.5-pro',
+  'gemini-1.5-pro-latest',
+  'gemini-2.0-flash',
+  'gemini-2.0-flash-exp',
+  'gemini-2.5-flash',
+  'gemini-2.5-pro',
+])
+
+/**
+ * Normalizes a model identifier to ensure it contains exactly one 'models/' prefix,
+ * rejecting malformed IDs or obsolete models with clear errors.
+ */
+export function normalizeModelId(rawModel: string): string {
+  if (!rawModel || typeof rawModel !== 'string') {
+    throw new Error('Model identifier is required.')
+  }
+  const trimmed = rawModel.trim()
+  if (!trimmed) {
+    throw new Error('Model identifier cannot be empty.')
+  }
+  // Strip duplicate leading 'models/' or slashes
+  const clean = trimmed.replace(/^(models\/)+/, '').replace(/^\/+/, '')
+  if (!clean || !/^[a-zA-Z0-9._-]+$/.test(clean)) {
+    throw new Error(`Malformed model identifier: "${rawModel}". Model names must contain only alphanumeric characters, dots, and hyphens.`)
+  }
+  if (OBSOLETE_MODELS.has(clean)) {
+    throw new Error(`The model "${rawModel}" is deprecated and no longer supported by Google Gemini. Please use a supported model such as gemini-3.6-flash or gemini-3.8-flash.`)
+  }
+  return `models/${clean}`
+}
+
+/**
+ * Probes a candidate model with a minimal generateContent ping to verify that
+ * Google's API actually accepts requests for this model under the given key.
+ * Never logs or reveals the API key.
+ */
+export async function probeModelAvailability(apiKey: string, modelId: string): Promise<{ available: boolean; status: number; message?: string }> {
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${modelId}:generateContent`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey,
+      },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: 'ping' }] }],
+        generationConfig: { maxOutputTokens: 1 },
+      }),
+    })
+
+    if (res.status === 200) {
+      return { available: true, status: 200 }
+    }
+
+    const data = await res.json().catch(() => ({}))
+    const errorMsg = data?.error?.message || `HTTP ${res.status}`
+    return { available: false, status: res.status, message: errorMsg }
+  } catch (err: unknown) {
+    return { available: false, status: 0, message: err instanceof Error ? err.message : 'Network error' }
+  }
+}
+
+/**
+ * Dynamically resolves a verified, supported Google Generative AI model ID for the provided key.
+ * Prioritizes gemini-3.6-flash and verifies gemini-3.8-flash as alternative via live probe.
  */
 export async function resolveGeminiModelId(apiKey: string, customModel?: string): Promise<string> {
+  // 1. If customModel supplied, validate and normalize
   if (customModel) {
-    return customModel.startsWith('models/') ? customModel : `models/${customModel}`
-  }
-  if (process.env.GEMINI_MODEL) {
-    const envModel = process.env.GEMINI_MODEL.trim()
-    return envModel.startsWith('models/') ? envModel : `models/${envModel}`
+    return normalizeModelId(customModel)
   }
 
-  // Check cache (keyed by first 16 chars of key)
+  // 2. If GEMINI_MODEL env set, validate and normalize
+  if (process.env.GEMINI_MODEL) {
+    return normalizeModelId(process.env.GEMINI_MODEL)
+  }
+
+  // 3. Check memory cache (keyed by first 16 chars of key)
   const cacheKey = apiKey.slice(0, 16)
   if (resolvedModelCache.has(cacheKey)) {
     return resolvedModelCache.get(cacheKey)!
   }
 
-  try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`, {
-      headers: { 'Content-Type': 'application/json' },
-    })
-    const data = await res.json()
+  // 4. Candidate list in prioritized order per requirements
+  const candidateModels = [
+    'models/gemini-3.6-flash', // Initial candidate
+    'models/gemini-3.8-flash', // Alternative verified available & Google recommended
+    'models/gemini-3.7-flash',
+    'models/gemini-3.5-flash',
+  ]
 
-    if (data.error) {
-      const errMsg = data.error.message || ''
-      if (errMsg.includes('API_KEY_INVALID') || data.error.status === 'INVALID_ARGUMENT') {
-        throw new Error('Your Google Gemini API key is invalid. Please verify and re-enter your key in Settings.')
+  // Probe candidates sequentially to guarantee we never select an unavailable model
+  for (const candidate of candidateModels) {
+    const probe = await probeModelAvailability(apiKey, candidate)
+    if (probe.available) {
+      console.log(`[Gemini Provider] Active model verified: ${candidate} (HTTP ${probe.status})`)
+      resolvedModelCache.set(cacheKey, candidate)
+      return candidate
+    } else {
+      console.warn(`[Gemini Provider] Candidate ${candidate} unavailable (HTTP ${probe.status}: ${probe.message || 'unknown'}). Probing next candidate...`)
+      if (probe.status === 401 || probe.status === 403) {
+        throw new Error('Your Google Gemini API key is invalid or unauthorized. Please verify and re-enter your key in Settings.')
       }
-      console.warn('Google ListModels returned warning:', errMsg)
-    } else if (Array.isArray(data.models)) {
-      const supportedModels = data.models
+      if (probe.status === 429) {
+        throw new Error('Google Gemini rate limit or quota exceeded (429). Please wait a moment and try again.')
+      }
+    }
+  }
+
+  // 5. If none of the primary candidates responded 200, query ListModels as fallback
+  try {
+    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models', {
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey,
+      },
+    })
+    const data = await res.json().catch(() => ({}))
+    if (Array.isArray(data.models)) {
+      const liveSupported = data.models
         .filter((m: { supportedGenerationMethods?: string[] }) =>
           m.supportedGenerationMethods?.includes('generateContent')
         )
         .map((m: { name: string }) => m.name)
+        .filter((name: string) => {
+          const clean = name.replace(/^(models\/)+/, '')
+          return !OBSOLETE_MODELS.has(clean)
+        })
 
-      console.log('Google Gemini supported generateContent models for key:', supportedModels)
-
-      // Preferred order of models for fast, accurate chat and dataset quality analysis
-      const priorityList = [
-        'models/gemini-1.5-flash-latest',
-        'models/gemini-1.5-flash',
-        'models/gemini-1.5-pro-latest',
-        'models/gemini-1.5-pro',
-        'models/gemini-2.0-flash-exp',
-        'models/gemini-2.0-flash',
-        'models/gemini-pro',
-      ]
-
-      for (const pref of priorityList) {
-        if (supportedModels.includes(pref)) {
-          resolvedModelCache.set(cacheKey, pref)
-          return pref
+      for (const fallbackModel of liveSupported) {
+        const probe = await probeModelAvailability(apiKey, fallbackModel)
+        if (probe.available) {
+          console.log(`[Gemini Provider] Dynamic active model verified: ${fallbackModel} (HTTP 200)`)
+          resolvedModelCache.set(cacheKey, fallbackModel)
+          return fallbackModel
         }
-      }
-
-      if (supportedModels.length > 0) {
-        resolvedModelCache.set(cacheKey, supportedModels[0])
-        return supportedModels[0]
       }
     }
   } catch (err) {
-    if (err instanceof Error && err.message.includes('API key is invalid')) {
-      throw err
-    }
-    console.warn('Could not query ListModels, using safe fallback:', err)
+    console.warn('[Gemini Provider] Dynamic model discovery failed:', err)
   }
 
-  const fallback = 'models/gemini-1.5-flash'
+  // Safe modern default fallback
+  const fallback = 'models/gemini-3.6-flash'
   resolvedModelCache.set(cacheKey, fallback)
   return fallback
 }
 
 /**
  * Returns a configured Google Generative AI Language Model instance.
- * Automatically resolves active model with Google and ensures required 'models/' prefix.
+ * Automatically resolves active verified model and ensures required 'models/' prefix.
  */
 export async function getGeminiModel(customApiKey?: string, customModel?: string) {
   const apiKey = customApiKey || process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY

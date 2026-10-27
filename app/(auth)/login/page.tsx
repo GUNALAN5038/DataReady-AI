@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { login } from '@/app/(auth)/actions'
 import { Loader2, Database } from 'lucide-react'
+import { ThemeToggleCompact } from '@/components/theme-toggle'
 
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
@@ -24,7 +25,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-indigo-50/50 via-background to-blue-50/40 dark:from-zinc-950 dark:via-zinc-900 dark:to-indigo-950/20 p-4">
+    <div className="relative flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-indigo-50/50 via-background to-blue-50/40 dark:from-zinc-950 dark:via-zinc-900 dark:to-indigo-950/20 p-4">
+      <div className="absolute top-4 right-4">
+        <ThemeToggleCompact />
+      </div>
       <div className="flex flex-col items-center mb-6">
         <div className="h-12 w-12 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25 mb-3">
           <Database className="h-6 w-6" />

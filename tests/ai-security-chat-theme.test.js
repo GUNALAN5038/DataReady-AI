@@ -5,6 +5,8 @@
 const assert = require('assert')
 const fs = require('fs')
 const path = require('path')
+const { createJiti } = require('jiti')
+const jiti = createJiti(process.cwd())
 
 console.log('\n======================================================================')
 console.log(' DataReady AI — AI Security, Chat History & Theme Verification')
@@ -69,13 +71,37 @@ test('Source code does NOT contain hardcoded API keys', () => {
   }
 })
 
+test('Gemini model configuration normalizes modelId to contain models/ prefix', () => {
+  const { getGeminiModel } = jiti('./lib/ai/gemini')
+  const model1 = getGeminiModel('mock-test-key-12345', 'gemini-1.5-flash')
+  assert(model1.modelId.startsWith('models/'), 'modelId must start with models/ to avoid Google API 404 Not Found')
+  assert.strictEqual(model1.modelId, 'models/gemini-1.5-flash')
+
+  const model2 = getGeminiModel('mock-test-key-12345', 'models/gemini-1.5-pro')
+  assert.strictEqual(model2.modelId, 'models/gemini-1.5-pro')
+})
+
+test('getGeminiModel throws clear actionable error when no API key is provided', () => {
+  const { getGeminiModel } = jiti('./lib/ai/gemini')
+  const originalGemini = process.env.GEMINI_API_KEY
+  const originalGoogle = process.env.GOOGLE_GENERATIVE_AI_API_KEY
+  delete process.env.GEMINI_API_KEY
+  delete process.env.GOOGLE_GENERATIVE_AI_API_KEY
+  try {
+    assert.throws(
+      () => getGeminiModel(),
+      /AI provider not configured. Please add an API key in Settings./
+    )
+  } finally {
+    if (originalGemini) process.env.GEMINI_API_KEY = originalGemini
+    if (originalGoogle) process.env.GOOGLE_GENERATIVE_AI_API_KEY = originalGoogle
+  }
+})
+
 // -----------------------------------------------------------------------------
 // 2. FEATURE 2: Restrict AI Assistant to DataReady AI & Guardrails
 // -----------------------------------------------------------------------------
 console.log('\n--- 2. AI Scope Restriction & Security Guardrails Tests ---')
-
-const { createJiti } = require('jiti')
-const jiti = createJiti(process.cwd())
 
 const {
   SCOPE_RESTRICTION_MESSAGE,

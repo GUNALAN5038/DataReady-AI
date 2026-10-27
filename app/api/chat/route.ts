@@ -245,15 +245,32 @@ export async function POST(req: Request) {
 
   } catch (error: unknown) {
     console.error('Chat endpoint error:', error)
-    if (error instanceof Error && error.message?.includes('AI provider not configured')) {
-      return NextResponse.json(
-        { error: 'AI provider not configured. Please add an API key in Settings.' },
-        { status: 503 }
-      )
+
+    let statusCode = 500
+    let userMessage = 'An error occurred while communicating with the AI. Please verify your credentials and try again.'
+
+    if (error instanceof Error) {
+      const msg = error.message
+      const lower = msg.toLowerCase()
+
+      if (lower.includes('ai provider not configured') || lower.includes('failed to decrypt saved api key')) {
+        statusCode = 503
+        userMessage = msg
+      } else if (lower.includes('api key not valid') || lower.includes('api_key_invalid') || lower.includes('unauthenticated')) {
+        statusCode = 401
+        userMessage = 'Your Google Gemini API key is invalid. Please verify and re-enter your key in Settings.'
+      } else if (lower.includes('resource_exhausted') || lower.includes('quota') || lower.includes('rate limit')) {
+        statusCode = 429
+        userMessage = 'Google Gemini API rate limit or quota exceeded. Please wait a moment and try again.'
+      } else if (lower.includes('not found') || lower.includes('models/')) {
+        statusCode = 502
+        userMessage = 'The requested Gemini model is currently unavailable or misconfigured. Please try again.'
+      } else {
+        // Sanitize any potential internal URLs or query params
+        userMessage = msg.replace(/https?:\/\/[^\s]+/g, '').trim() || userMessage
+      }
     }
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'An error occurred during AI chat.' },
-      { status: 500 }
-    )
+
+    return NextResponse.json({ error: userMessage }, { status: statusCode })
   }
 }

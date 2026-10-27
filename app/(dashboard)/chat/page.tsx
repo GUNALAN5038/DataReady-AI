@@ -52,6 +52,28 @@ function formatRelativeTime(dateString: string): string {
   }
 }
 
+function parseChatErrorMessage(rawError: Error | undefined): { message: string; isConfigError: boolean } {
+  if (!rawError) return { message: '', isConfigError: false }
+
+  let msg = rawError.message || ''
+  try {
+    const parsed = JSON.parse(msg)
+    if (parsed.error && typeof parsed.error === 'string') {
+      msg = parsed.error
+    }
+  } catch {}
+
+  const lower = msg.toLowerCase()
+  const isConfigError =
+    lower.includes('ai provider not configured') ||
+    lower.includes('add an api key in settings') ||
+    lower.includes('failed to decrypt saved api key') ||
+    lower.includes('api key is invalid') ||
+    lower.includes('api key not valid')
+
+  return { message: msg, isConfigError }
+}
+
 export default function ChatPage() {
   const [conversations, setConversations] = useState<ConversationItem[]>([])
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null)
@@ -386,23 +408,26 @@ export default function ChatPage() {
           
           {/* Messages Scroll Area */}
           <ScrollArea className="flex-1 p-4 sm:p-5" ref={scrollRef}>
-            {error && (
-              <Alert variant="destructive" className="mb-4 rounded-xl border-rose-300 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40">
-                <AlertCircle className="h-4 w-4 text-rose-600 dark:text-rose-400" />
-                <AlertDescription className="text-xs text-rose-700 dark:text-rose-300">
-                  {error.message === 'AI provider not configured. Please add an API key in Settings.' ? (
-                    <span>
-                      AI provider not configured. Please{' '}
-                      <Link href="/settings?tab=keys" className="font-semibold underline inline-flex items-center gap-0.5">
-                        add your Google Gemini API key in Settings <ExternalLink className="h-3 w-3" />
-                      </Link>
-                    </span>
-                  ) : (
-                    'An error occurred while communicating with the AI. Please verify your credentials and try again.'
-                  )}
-                </AlertDescription>
-              </Alert>
-            )}
+            {error && (() => {
+              const { message, isConfigError } = parseChatErrorMessage(error)
+              return (
+                <Alert variant="destructive" className="mb-4 rounded-xl border-rose-300 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40">
+                  <AlertCircle className="h-4 w-4 text-rose-600 dark:text-rose-400 flex-shrink-0" />
+                  <AlertDescription className="text-xs text-rose-700 dark:text-rose-300">
+                    {isConfigError ? (
+                      <span>
+                        {message || 'AI provider not configured'}. Please{' '}
+                        <Link href="/settings?tab=keys" className="font-semibold underline inline-flex items-center gap-0.5">
+                          configure your Google Gemini API key in Settings <ExternalLink className="h-3 w-3" />
+                        </Link>
+                      </span>
+                    ) : (
+                      message || 'An error occurred while communicating with the AI. Please verify your credentials and try again.'
+                    )}
+                  </AlertDescription>
+                </Alert>
+              )
+            })()}
 
             {isLoadingMessages ? (
               <div className="h-full flex flex-col items-center justify-center py-20 space-y-3">

@@ -38,16 +38,28 @@ export function DatasetChat({ datasetId }: { datasetId?: string }) {
       </CardHeader>
       
       <ScrollArea className="flex-1 p-5" ref={scrollRef}>
-        {error && (
-          <Alert variant="destructive" className="mb-4 rounded-xl border-rose-300 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40">
-            <AlertCircle className="h-4 w-4 text-rose-600 dark:text-rose-400" />
-            <AlertDescription className="text-xs text-rose-700 dark:text-rose-300">
-              {error.message.includes('AI provider not configured') 
-                ? 'AI provider not configured. Please add an API key in Settings.' 
-                : 'An error occurred while communicating with the AI. Please try again.'}
-            </AlertDescription>
-          </Alert>
-        )}
+        {error && (() => {
+          let msg = error.message
+          try {
+            const parsed = JSON.parse(msg)
+            if (parsed.error && typeof parsed.error === 'string') msg = parsed.error
+          } catch {}
+          const isConfig = msg.toLowerCase().includes('ai provider not configured') || msg.toLowerCase().includes('api key')
+          return (
+            <Alert variant="destructive" className="mb-4 rounded-xl border-rose-300 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40">
+              <AlertCircle className="h-4 w-4 text-rose-600 dark:text-rose-400 flex-shrink-0" />
+              <AlertDescription className="text-xs text-rose-700 dark:text-rose-300">
+                {isConfig ? (
+                  <span>
+                    {msg}. Please configure your API key in Settings.
+                  </span>
+                ) : (
+                  msg || 'An error occurred while communicating with the AI. Please try again.'
+                )}
+              </AlertDescription>
+            </Alert>
+          )
+        })()}
 
         {messages.length === 0 && !error && (
           <div className="h-full flex flex-col items-center justify-center text-muted-foreground space-y-4 py-12 px-4">

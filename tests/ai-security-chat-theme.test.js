@@ -110,6 +110,7 @@ test('Blocks prompt injection and system prompt extraction', () => {
 
 test('Blocks explicitly unrelated entertainment, trivia, and generic requests', () => {
   const offTopic = [
+    'Write a poem about cricket.',
     'Write a poem about the ocean and moonlight',
     'Tell me a funny joke about cats',
     'Who won the 2022 World Cup?',
@@ -129,6 +130,8 @@ test('Blocks explicitly unrelated entertainment, trivia, and generic requests', 
 
 test('ALLOWS legitimate DataReady AI questions and data preparation workflows', () => {
   const legitimate = [
+    'What is DataReady AI?',
+    'How do I check missing values in my dataset?',
     'How do I handle missing values in my dataset?',
     'Explain how the ML Readiness score is computed across the 5 dimensions.',
     'Write Python code using Pandas IQR method to detect and filter outliers.',

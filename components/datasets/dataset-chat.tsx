@@ -44,7 +44,12 @@ export function DatasetChat({ datasetId }: { datasetId?: string }) {
             const parsed = JSON.parse(msg)
             if (parsed.error && typeof parsed.error === 'string') msg = parsed.error
           } catch {}
-          const isConfig = msg.toLowerCase().includes('ai provider not configured') || msg.toLowerCase().includes('api key')
+          let lower = msg.toLowerCase()
+          if (lower.includes('failed to parse stream string') || lower.includes('no separator found')) {
+            msg = 'An error occurred while streaming the AI response. Please try again.'
+            lower = msg.toLowerCase()
+          }
+          const isConfig = lower.includes('ai provider not configured') || lower.includes('api key')
           return (
             <Alert variant="destructive" className="mb-4 rounded-xl border-rose-300 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40">
               <AlertCircle className="h-4 w-4 text-rose-600 dark:text-rose-400 flex-shrink-0" />

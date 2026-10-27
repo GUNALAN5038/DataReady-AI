@@ -1,16 +1,17 @@
 import { createClient } from '@/lib/supabase/server'
 import { getAIProvider } from '@/lib/ai/provider'
 import { isOffTopicOrRestricted, buildSecureSystemPrompt, SCOPE_RESTRICTION_MESSAGE } from '@/lib/ai/guardrails'
-import { streamText } from 'ai'
+import { streamText, formatStreamPart } from 'ai'
 import { NextResponse } from 'next/server'
 
 export const maxDuration = 45
 
 function createDirectStreamResponse(text: string, conversationId: string) {
   const encoder = new TextEncoder()
+  const formattedChunk = formatStreamPart('text', text)
   const stream = new ReadableStream({
     start(controller) {
-      controller.enqueue(encoder.encode(text))
+      controller.enqueue(encoder.encode(formattedChunk))
       controller.close()
     },
   })
@@ -19,6 +20,7 @@ function createDirectStreamResponse(text: string, conversationId: string) {
     headers: {
       'Content-Type': 'text/plain; charset=utf-8',
       'X-Conversation-Id': conversationId,
+      'X-Accel-Buffering': 'no',
     },
   })
 }
@@ -237,10 +239,9 @@ export async function POST(req: Request) {
       },
     })
 
-    const streamResponse = result.toTextStreamResponse()
-    if (savedConvId) {
-      streamResponse.headers.set('X-Conversation-Id', savedConvId)
-    }
+    const streamResponse = result.toAIStreamResponse({
+      headers: savedConvId ? { 'X-Conversation-Id': savedConvId } : undefined,
+    })
     return streamResponse
 
   } catch (error: unknown) {

@@ -64,6 +64,10 @@ function parseChatErrorMessage(rawError: Error | undefined): { message: string; 
   } catch {}
 
   const lower = msg.toLowerCase()
+  if (lower.includes('failed to parse stream string') || lower.includes('no separator found')) {
+    msg = 'An error occurred while streaming the AI response. Please try again.'
+  }
+
   const isConfigError =
     lower.includes('ai provider not configured') ||
     lower.includes('add an api key in settings') ||

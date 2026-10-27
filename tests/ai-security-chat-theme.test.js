@@ -282,6 +282,44 @@ test('Theme toggle supports Light, Dark, and System modes with persistence', () 
 })
 
 // -----------------------------------------------------------------------------
+// 5. FEATURE 5: AI Stream Protocol & Error Handling
+// -----------------------------------------------------------------------------
+console.log('\n--- 5. AI Stream Protocol & Streaming Error Handling Tests ---')
+
+test('Stream parts use 0: prefix format required by useChat data-stream parser', () => {
+  const { formatStreamPart } = require('ai')
+  const chunk = formatStreamPart('text', 'Hello from assistant')
+  assert.strictEqual(chunk, '0:"Hello from assistant"\n')
+  const sepIdx = chunk.indexOf(':')
+  assert.strictEqual(sepIdx, 1, 'Chunk must contain colon separator after stream code')
+  assert.strictEqual(chunk.slice(0, sepIdx), '0', 'Text delta stream code must be 0')
+  const parsed = JSON.parse(chunk.slice(sepIdx + 1).trim())
+  assert.strictEqual(parsed, 'Hello from assistant')
+})
+
+test('Raw unformatted strings without separator are identified as parser hazards', () => {
+  const rawText = "I'm DataReady AI Assistant."
+  const sepIdx = rawText.indexOf(':')
+  assert.strictEqual(sepIdx, -1, 'Raw text lacks colon separator, proving cause of stream parser crash')
+})
+
+test('app/api/chat/route.ts uses toAIStreamResponse instead of toTextStreamResponse', () => {
+  const routePath = path.join(__dirname, '../app/api/chat/route.ts')
+  const routeContent = fs.readFileSync(routePath, 'utf8')
+  assert(routeContent.includes('toAIStreamResponse'), 'Must use toAIStreamResponse to match useChat streaming format')
+  assert(!routeContent.includes('toTextStreamResponse'), 'Must NOT use toTextStreamResponse with useChat')
+  assert(routeContent.includes('formatStreamPart'), 'Must format direct stream responses using formatStreamPart')
+})
+
+test('Error responses use non-2xx status codes to bypass client stream parser', () => {
+  const routePath = path.join(__dirname, '../app/api/chat/route.ts')
+  const routeContent = fs.readFileSync(routePath, 'utf8')
+  // Verify error responses return status: statusCode (non-200)
+  assert(routeContent.includes('{ status: statusCode }'), 'Error handler must return non-200 HTTP status')
+  assert(routeContent.includes('NextResponse.json({ error: userMessage }'), 'Must return JSON error payload')
+})
+
+// -----------------------------------------------------------------------------
 // Runner & Summary
 // -----------------------------------------------------------------------------
 async function runAll() {

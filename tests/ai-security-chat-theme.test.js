@@ -14,17 +14,10 @@ console.log('===================================================================
 
 let passed = 0
 let failed = 0
+const testQueue = []
 
 function test(name, fn) {
-  try {
-    fn()
-    console.log(`  ✓ PASS: ${name}`)
-    passed++
-  } catch (err) {
-    console.error(`  ✗ FAIL: ${name}`)
-    console.error(`    ${err.message}`)
-    failed++
-  }
+  testQueue.push({ name, fn })
 }
 
 // -----------------------------------------------------------------------------
@@ -71,25 +64,25 @@ test('Source code does NOT contain hardcoded API keys', () => {
   }
 })
 
-test('Gemini model configuration normalizes modelId to contain models/ prefix', () => {
+test('Gemini model configuration normalizes modelId to contain models/ prefix', async () => {
   const { getGeminiModel } = jiti('./lib/ai/gemini')
-  const model1 = getGeminiModel('mock-test-key-12345', 'gemini-1.5-flash')
+  const model1 = await getGeminiModel('mock-test-key-12345', 'gemini-1.5-flash')
   assert(model1.modelId.startsWith('models/'), 'modelId must start with models/ to avoid Google API 404 Not Found')
   assert.strictEqual(model1.modelId, 'models/gemini-1.5-flash')
 
-  const model2 = getGeminiModel('mock-test-key-12345', 'models/gemini-1.5-pro')
+  const model2 = await getGeminiModel('mock-test-key-12345', 'models/gemini-1.5-pro')
   assert.strictEqual(model2.modelId, 'models/gemini-1.5-pro')
 })
 
-test('getGeminiModel throws clear actionable error when no API key is provided', () => {
+test('getGeminiModel throws clear actionable error when no API key is provided', async () => {
   const { getGeminiModel } = jiti('./lib/ai/gemini')
   const originalGemini = process.env.GEMINI_API_KEY
   const originalGoogle = process.env.GOOGLE_GENERATIVE_AI_API_KEY
   delete process.env.GEMINI_API_KEY
   delete process.env.GOOGLE_GENERATIVE_AI_API_KEY
   try {
-    assert.throws(
-      () => getGeminiModel(),
+    await assert.rejects(
+      async () => await getGeminiModel(),
       /AI provider not configured. Please add an API key in Settings./
     )
   } finally {
@@ -259,12 +252,28 @@ test('Theme toggle supports Light, Dark, and System modes with persistence', () 
 })
 
 // -----------------------------------------------------------------------------
-// Summary
+// Runner & Summary
 // -----------------------------------------------------------------------------
-console.log('\n======================================================================')
-console.log(` Summary: ${passed} passed, ${failed} failed.`)
-console.log('======================================================================\n')
+async function runAll() {
+  for (const { name, fn } of testQueue) {
+    try {
+      await fn()
+      console.log(`  ✓ PASS: ${name}`)
+      passed++
+    } catch (err) {
+      console.error(`  ✗ FAIL: ${name}`)
+      console.error(`    ${err.message}`)
+      failed++
+    }
+  }
 
-if (failed > 0) {
-  process.exit(1)
+  console.log('\n======================================================================')
+  console.log(` Summary: ${passed} passed, ${failed} failed.`)
+  console.log('======================================================================\n')
+
+  if (failed > 0) {
+    process.exit(1)
+  }
 }
+
+runAll()

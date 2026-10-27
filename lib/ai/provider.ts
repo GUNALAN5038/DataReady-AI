@@ -38,7 +38,7 @@ export async function getAIProvider(userId?: string) {
               .eq('id', keyRecord.id)
               .then(() => {})
 
-            return getGeminiModel(decryptedKey.trim())
+            return await getGeminiModel(decryptedKey.trim())
           }
         } catch (decryptErr) {
           console.warn('Could not decrypt stored user API key (encryption key mismatch):', decryptErr)
@@ -53,7 +53,7 @@ export async function getAIProvider(userId?: string) {
   // 2. Fall back to application-level environment key
   const envKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY
   if (envKey && envKey.trim().length > 0) {
-    return getGeminiModel(envKey.trim())
+    return await getGeminiModel(envKey.trim())
   }
 
   // 3. Clear message when no key exists

@@ -12,9 +12,9 @@ export async function GET() {
   try {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('*')
+      .select('full_name')
       .eq('id', user.id)
-      .single()
+      .maybeSingle()
 
     return NextResponse.json({
       user: {

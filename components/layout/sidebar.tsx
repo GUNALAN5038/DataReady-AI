@@ -7,6 +7,7 @@ import {
   Upload,
   Database,
   MessageSquare,
+  Bell,
   Settings,
   HelpCircle,
   Info,
@@ -24,6 +25,7 @@ const navigation = [
   { name: 'Upload Dataset', href: '/upload', icon: Upload },
   { name: 'My Datasets', href: '/datasets', icon: Database },
   { name: 'AI Chat', href: '/chat', icon: MessageSquare },
+  { name: 'Notifications', href: '/notifications', icon: Bell },
 ]
 
 const userNavigation = [

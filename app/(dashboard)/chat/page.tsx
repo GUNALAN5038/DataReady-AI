@@ -4,7 +4,7 @@ import { useChat } from 'ai/react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import { MarkdownMessage } from '@/components/chat/markdown-message'
 import { 
   Send, 
   Bot, 
@@ -17,7 +17,6 @@ import {
   PanelLeftClose, 
   PanelLeftOpen, 
   Loader2, 
-  Sparkles,
   ExternalLink
 } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -134,18 +133,44 @@ export default function ChatPage() {
     },
   })
 
-  const scrollRef = useRef<HTMLDivElement>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const isAtBottomRef = useRef(true)
+
+  const handleScroll = useCallback(() => {
+    const el = scrollContainerRef.current
+    if (!el) return
+    // User is considered at bottom if within 80px of bottom
+    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight <= 80
+    isAtBottomRef.current = atBottom
+  }, [])
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+    if (isAtBottomRef.current && scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({
+        top: scrollContainerRef.current.scrollHeight,
+        behavior: 'smooth',
+      })
     }
   }, [messages])
+
+  const handleSendMessage = (e: React.FormEvent<HTMLFormElement>) => {
+    isAtBottomRef.current = true
+    handleSubmit(e)
+    setTimeout(() => {
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTo({
+          top: scrollContainerRef.current.scrollHeight,
+          behavior: 'smooth',
+        })
+      }
+    }, 50)
+  }
 
   const handleNewChat = () => {
     setActiveConversationId(null)
     setMessages([])
     setIsMobileOpen(false)
+    isAtBottomRef.current = true
   }
 
   const handleSelectConversation = async (convId: string) => {
@@ -153,6 +178,7 @@ export default function ChatPage() {
     setIsLoadingMessages(true)
     setActiveConversationId(convId)
     setIsMobileOpen(false)
+    isAtBottomRef.current = true
 
     try {
       const res = await fetch(`/api/chat/conversations/${convId}`)
@@ -164,6 +190,11 @@ export default function ChatPage() {
           content: m.content,
         }))
         setMessages(loadedMessages)
+        setTimeout(() => {
+          if (scrollContainerRef.current) {
+            scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight
+          }
+        }, 50)
       } else {
         console.error('Failed to fetch conversation messages.')
       }
@@ -206,9 +237,9 @@ export default function ChatPage() {
 
   // Conversation sidebar content
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-card/60 backdrop-blur-xs">
+    <div className="flex flex-col h-full bg-card/60 backdrop-blur-xs min-h-0">
       {/* Sidebar Header */}
-      <div className="p-3 border-b border-border/70 flex items-center justify-between gap-2">
+      <div className="p-3 border-b border-border/70 flex items-center justify-between gap-2 flex-shrink-0">
         <Button
           onClick={handleNewChat}
           size="sm"
@@ -220,7 +251,7 @@ export default function ChatPage() {
       </div>
 
       {/* History List */}
-      <div className="flex-1 overflow-y-auto p-2 space-y-1">
+      <div className="flex-1 min-h-0 overflow-y-auto p-2 space-y-1">
         {isLoadingConversations ? (
           <div className="p-4 space-y-2.5">
             {[1, 2, 3, 4].map((i) => (
@@ -301,16 +332,16 @@ export default function ChatPage() {
         )}
       </div>
 
-      <div className="p-2.5 border-t border-border/70 text-[11px] text-muted-foreground text-center">
+      <div className="p-2.5 border-t border-border/70 text-[11px] text-muted-foreground text-center flex-shrink-0">
         <span>Persistent &amp; RLS Protected</span>
       </div>
     </div>
   )
 
   return (
-    <div className="flex flex-col h-[calc(100vh-7.5rem)] max-w-7xl mx-auto space-y-3">
+    <div className="flex flex-col h-[calc(100dvh-2rem)] sm:h-[calc(100dvh-3rem)] lg:h-[calc(100dvh-4rem)] max-w-7xl mx-auto space-y-3 min-h-0">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-shrink-0">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground flex items-center gap-2.5">
             <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-600 text-white flex items-center justify-center shadow-xs shadow-indigo-500/20">
@@ -346,10 +377,10 @@ export default function ChatPage() {
       </div>
 
       {/* Main Container: Split History Sidebar + Chat */}
-      <div className="flex-1 flex gap-3 overflow-hidden">
+      <div className="flex-1 flex gap-3 min-h-0 overflow-hidden">
         {/* Desktop History Sidebar */}
         <div className={cn(
-          "hidden md:flex flex-col border border-border/80 rounded-2xl overflow-hidden transition-all duration-200",
+          "hidden md:flex flex-col border border-border/80 rounded-2xl overflow-hidden transition-all duration-200 min-h-0",
           isSidebarOpen ? "w-72 lg:w-80" : "w-0 border-none hidden"
         )}>
           {sidebarContent}
@@ -362,7 +393,7 @@ export default function ChatPage() {
             onClick={() => setIsMobileOpen(false)}
           >
             <div
-              className="absolute left-0 top-0 bottom-0 w-4/5 max-w-xs bg-background shadow-2xl border-r border-border"
+              className="absolute left-0 top-0 bottom-0 w-4/5 max-w-xs bg-background shadow-2xl border-r border-border flex flex-col min-h-0 overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
               {sidebarContent}
@@ -371,9 +402,9 @@ export default function ChatPage() {
         )}
 
         {/* Active Chat Card */}
-        <Card className="flex-1 flex flex-col overflow-hidden rounded-2xl border-border/80 bg-card/70 backdrop-blur-xs shadow-xs">
+        <Card className="flex-1 flex flex-col min-h-0 overflow-hidden rounded-2xl border-border/80 bg-card/70 backdrop-blur-xs shadow-xs">
           {/* Chat Header */}
-          <CardHeader className="border-b border-border/60 bg-muted/30 py-3 px-4 sm:px-5 flex flex-row items-center justify-between">
+          <CardHeader className="border-b border-border/60 bg-muted/30 py-3 px-4 sm:px-5 flex flex-row items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-2 min-w-0">
               <Button
                 variant="ghost"
@@ -411,7 +442,13 @@ export default function ChatPage() {
           </CardHeader>
           
           {/* Messages Scroll Area */}
-          <ScrollArea className="flex-1 p-4 sm:p-5" ref={scrollRef}>
+          <div
+            ref={scrollContainerRef}
+            onScroll={handleScroll}
+            className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 focus:outline-hidden"
+            tabIndex={0}
+            aria-label="Conversation messages"
+          >
             {error && (() => {
               const { message, isConfigError } = parseChatErrorMessage(error)
               return (
@@ -498,7 +535,11 @@ export default function ChatPage() {
                         ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs shadow-indigo-500/15 rounded-br-xs' 
                         : 'bg-card border border-border/80 text-foreground shadow-xs rounded-bl-xs'
                     }`}>
-                      <p className="whitespace-pre-wrap">{m.content}</p>
+                      {m.role === 'assistant' ? (
+                        <MarkdownMessage content={m.content} />
+                      ) : (
+                        <p className="whitespace-pre-wrap break-words">{m.content}</p>
+                      )}
                     </div>
                     {m.role === 'user' && (
                       <div className="h-8 w-8 rounded-xl bg-muted/80 border border-border/80 flex items-center justify-center text-muted-foreground flex-shrink-0 mt-0.5">
@@ -523,11 +564,11 @@ export default function ChatPage() {
                 )}
               </div>
             )}
-          </ScrollArea>
+          </div>
 
           {/* Prompt Input Form */}
-          <CardContent className="p-3 border-t border-border/60 bg-muted/20">
-            <form onSubmit={handleSubmit} className="flex gap-2 items-center">
+          <CardContent className="p-3 border-t border-border/60 bg-muted/20 flex-shrink-0">
+            <form onSubmit={handleSendMessage} className="flex gap-2 items-center">
               <Input
                 value={input}
                 onChange={handleInputChange}

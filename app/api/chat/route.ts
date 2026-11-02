@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getAuthenticatedUser } from '@/lib/supabase/server'
 import { getAIProvider } from '@/lib/ai/provider'
 import { isOffTopicOrRestricted, buildSecureSystemPrompt, SCOPE_RESTRICTION_MESSAGE } from '@/lib/ai/guardrails'
 import { streamText, formatStreamPart } from 'ai'
@@ -28,7 +28,7 @@ function createDirectStreamResponse(text: string, conversationId: string) {
 export async function POST(req: Request) {
   try {
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = (await getAuthenticatedUser()) || (await supabase.auth.getUser()).data?.user
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized: Please log in to use AI Chat.' }, { status: 401 })

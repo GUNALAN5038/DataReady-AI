@@ -320,6 +320,129 @@ test('Error responses use non-2xx status codes to bypass client stream parser', 
 })
 
 // -----------------------------------------------------------------------------
+// 6. Markdown Rendering, Safety & Message Scrolling Layout Tests
+// -----------------------------------------------------------------------------
+console.log('--- 6. Markdown Rendering & Scrolling Layout Tests ---')
+
+test('MarkdownMessage component exists and does NOT use dangerouslySetInnerHTML', () => {
+  const mdPath = path.join(__dirname, '../components/chat/markdown-message.tsx')
+  assert(fs.existsSync(mdPath), 'components/chat/markdown-message.tsx must exist')
+  const content = fs.readFileSync(mdPath, 'utf8')
+  assert(!content.includes('dangerouslySetInnerHTML'), 'MarkdownMessage must NOT use dangerouslySetInnerHTML')
+  assert(content.includes('ReactMarkdown'), 'MarkdownMessage must use ReactMarkdown')
+  assert(content.includes('remarkGfm'), 'MarkdownMessage must use remarkGfm for tables and GFM syntax')
+})
+
+test('Chat rendering files do NOT use dangerouslySetInnerHTML', () => {
+  const files = [
+    'app/(dashboard)/chat/page.tsx',
+    'components/datasets/dataset-chat.tsx',
+    'components/chat/markdown-message.tsx',
+  ]
+  for (const rel of files) {
+    const full = path.join(__dirname, '..', rel)
+    const content = fs.readFileSync(full, 'utf8')
+    assert(!content.includes('dangerouslySetInnerHTML'), `${rel} must not use dangerouslySetInnerHTML`)
+  }
+})
+
+test('app/(dashboard)/chat/page.tsx renders assistant messages with MarkdownMessage', () => {
+  const chatPage = fs.readFileSync(path.join(__dirname, '../app/(dashboard)/chat/page.tsx'), 'utf8')
+  assert(chatPage.includes("import { MarkdownMessage } from '@/components/chat/markdown-message'"), 'Chat page must import MarkdownMessage')
+  assert(chatPage.includes('<MarkdownMessage content={m.content} />'), 'Assistant messages must render through MarkdownMessage')
+})
+
+test('components/datasets/dataset-chat.tsx renders assistant messages with MarkdownMessage', () => {
+  const datasetChat = fs.readFileSync(path.join(__dirname, '../components/datasets/dataset-chat.tsx'), 'utf8')
+  assert(datasetChat.includes("import { MarkdownMessage } from '@/components/chat/markdown-message'"), 'Dataset chat must import MarkdownMessage')
+  assert(datasetChat.includes('<MarkdownMessage content={m.content} />'), 'Assistant messages must render through MarkdownMessage')
+})
+
+test('Chat page implements flex column min-height:0 and independent overflow-y:auto', () => {
+  const chatPage = fs.readFileSync(path.join(__dirname, '../app/(dashboard)/chat/page.tsx'), 'utf8')
+  assert(chatPage.includes('overflow-y-auto'), 'Message list must use overflow-y-auto')
+  assert(chatPage.includes('min-h-0'), 'Chat containers must include min-h-0 to avoid flex overflow')
+  assert(chatPage.includes('h-[calc(100dvh-'), 'Chat layout must constrain height to viewport bounds')
+  assert(chatPage.includes('flex-shrink-0'), 'Composer and header must have flex-shrink-0')
+})
+
+test('Safe URL filter blocks dangerous javascript: and data: schemes', () => {
+  const mdContent = fs.readFileSync(path.join(__dirname, '../components/chat/markdown-message.tsx'), 'utf8')
+  assert(mdContent.includes('javascript:'), 'Safe URL check must inspect for javascript: scheme')
+  assert(mdContent.includes('vbscript:'), 'Safe URL check must inspect for vbscript: scheme')
+  assert(mdContent.includes('data:'), 'Safe URL check must inspect for data: scheme')
+})
+
+test('Markdown engine renders headings, bold, italic, lists, hr, tables, and links correctly', async () => {
+  const React = require('react')
+  const ReactDOMServer = require('react-dom/server')
+  const { default: ReactMarkdown } = await import('react-markdown')
+  const { default: remarkGfm } = await import('remark-gfm')
+
+  const sample = `# Heading 1
+## Heading 2
+### Heading 3
+
+This is **bold** text and *italic* text.
+
+---
+
+- Unordered item 1
+- Unordered item 2
+
+1. First step
+2. Second step
+
+| Metric | Target | Status |
+| :--- | :--- | :--- |
+| Completeness | > 95% | Pass |
+| Outliers | < 2% | Pass |
+
+Check [Documentation](https://example.com) for details.
+`
+
+  const html = ReactDOMServer.renderToStaticMarkup(
+    React.createElement(ReactMarkdown, { remarkPlugins: [remarkGfm] }, sample)
+  )
+
+  assert(html.includes('<h1>Heading 1</h1>'), 'Must render h1')
+  assert(html.includes('<h2>Heading 2</h2>'), 'Must render h2')
+  assert(html.includes('<h3>Heading 3</h3>'), 'Must render h3')
+  assert(html.includes('<strong>bold</strong>'), 'Must render bold')
+  assert(html.includes('<em>italic</em>'), 'Must render italic')
+  assert(html.includes('<hr'), 'Must render horizontal rule')
+  assert(html.includes('<ul>'), 'Must render unordered list')
+  assert(html.includes('<ol>'), 'Must render ordered list')
+  assert(html.includes('<li>Unordered item 1</li>'), 'Must render list items')
+  assert(html.includes('<table>'), 'Must render table')
+  assert(html.includes('<th') && html.includes('Metric</th>'), 'Must render table header')
+  assert(html.includes('<td') && html.includes('Completeness</td>'), 'Must render table cells')
+  assert(html.includes('<a href="https://example.com"'), 'Must render links')
+})
+
+test('Markdown engine renders streaming and incomplete chunks gracefully without crashing', async () => {
+  const React = require('react')
+  const ReactDOMServer = require('react-dom/server')
+  const { default: ReactMarkdown } = await import('react-markdown')
+  const { default: remarkGfm } = await import('remark-gfm')
+
+  const chunks = [
+    '**Unclosed bold chunk...',
+    '# Heading in pr',
+    '```python\ndef calculate_iqr(df):\n    return',
+    '| Col A | Col B |\n| ---',
+    '- List item 1\n- Partial item 2',
+  ]
+
+  for (const chunk of chunks) {
+    const html = ReactDOMServer.renderToStaticMarkup(
+      React.createElement(ReactMarkdown, { remarkPlugins: [remarkGfm] }, chunk)
+    )
+    assert(typeof html === 'string' && html.length > 0, `Chunk "${chunk}" must render valid HTML string`)
+  }
+})
+
+// -----------------------------------------------------------------------------
 // Runner & Summary
 // -----------------------------------------------------------------------------
 async function runAll() {

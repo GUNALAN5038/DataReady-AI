@@ -38,7 +38,7 @@ const UNRELATED_TOPIC_PATTERNS = [
 ]
 
 // Legitimate keywords related to DataReady AI and data preparation
-const LEGITIMATE_DATAREADY_PATTERNS = [
+export const LEGITIMATE_DATAREADY_PATTERNS = [
   /data/i,
   /dataset/i,
   /ready/i,

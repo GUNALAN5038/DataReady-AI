@@ -119,7 +119,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       duplicatesAfter,
       affectedRows,
       affectedColumns,
-      samplePreview: transformedData.slice(0, 10),
+      samplePreview: transformedData.slice(0, 50),
       columns: newColumns
     }
 

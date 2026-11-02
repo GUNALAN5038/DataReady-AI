@@ -1,24 +1,26 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getAuthenticatedUser } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { AlertCircle, Sparkles, Scale, Gauge, Lightbulb, CheckCircle2, TrendingUp } from 'lucide-react'
+import { AlertCircle, Sparkles, Scale, Gauge, Lightbulb, CheckCircle2 } from 'lucide-react'
 import { TransformTab } from '@/components/datasets/transform-tab'
 import { ExportButton } from '@/components/datasets/export-button'
 import { AIInsightsTab } from '@/components/datasets/ai-insights-tab'
+import { AIInsightsResponse } from '@/types/insights'
 import { DatasetChat } from '@/components/datasets/dataset-chat'
 import { HistoryTab } from '@/components/datasets/history-tab'
 import { CompareTab } from '@/components/datasets/compare-tab'
+import { DatasetPreviewTable } from '@/components/datasets/dataset-preview-table'
 import { cn } from '@/lib/utils'
 
 export default async function DatasetPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getAuthenticatedUser()
   if (!user) redirect('/login')
+
+  const supabase = await createClient()
 
   const { data: dataset, error: datasetError } = await supabase
     .from('datasets')
@@ -62,10 +64,10 @@ export default async function DatasetPage({ params }: { params: Promise<{ id: st
 
   const currentVersion = dataset.current_version ?? 0
 
-  // 1. Fetch Current Analysis
-  const { data: currentFullAnalysis } = await supabase
+  // 1. Fetch Current Analyses, Transformations, and Cached Insights in parallel with selective columns
+  const currentFullPromise = supabase
     .from('analyses')
-    .select('*')
+    .select('id, analysis_type, dataset_version, ml_readiness_score, results, recommendations, created_at')
     .eq('dataset_id', id)
     .eq('analysis_type', 'full_analysis')
     .order('dataset_version', { ascending: false })
@@ -73,9 +75,9 @@ export default async function DatasetPage({ params }: { params: Promise<{ id: st
     .limit(1)
     .maybeSingle()
 
-  const { data: currentMLAnalysis } = await supabase
+  const currentMLPromise = supabase
     .from('analyses')
-    .select('*')
+    .select('id, analysis_type, dataset_version, ml_readiness_score, results, created_at')
     .eq('dataset_id', id)
     .eq('analysis_type', 'ml_readiness')
     .order('dataset_version', { ascending: false })
@@ -83,50 +85,90 @@ export default async function DatasetPage({ params }: { params: Promise<{ id: st
     .limit(1)
     .maybeSingle()
 
-  // 2. Fetch Initial Analysis (Version 0) for Before/After comparison
-  const { data: initialFullAnalysis } = await supabase
-    .from('analyses')
-    .select('*')
+  const transformationsPromise = supabase
+    .from('dataset_transformations')
+    .select('id, dataset_id, transformation_type, configuration, previous_version, new_version, affected_rows, affected_columns, status, created_at')
     .eq('dataset_id', id)
-    .eq('analysis_type', 'full_analysis')
-    .eq('dataset_version', 0)
-    .order('created_at', { ascending: true })
+    .order('new_version', { ascending: false })
+
+  const cachedInsightsPromise = supabase
+    .from('analyses')
+    .select('results')
+    .eq('dataset_id', id)
+    .eq('analysis_type', 'ai_insights')
+    .eq('dataset_version', currentVersion)
+    .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle()
 
-  const { data: initialMLAnalysis } = await supabase
-    .from('analyses')
-    .select('*')
-    .eq('dataset_id', id)
-    .eq('analysis_type', 'ml_readiness')
-    .eq('dataset_version', 0)
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle()
+  // 2. Only fetch distinct Version 0 records if currentVersion is greater than 0
+  const initialFullPromise = currentVersion > 0
+    ? supabase
+        .from('analyses')
+        .select('id, analysis_type, dataset_version, ml_readiness_score, results, recommendations, created_at')
+        .eq('dataset_id', id)
+        .eq('analysis_type', 'full_analysis')
+        .eq('dataset_version', 0)
+        .order('created_at', { ascending: true })
+        .limit(1)
+        .maybeSingle()
+    : Promise.resolve({ data: null })
+
+  const initialMLPromise = currentVersion > 0
+    ? supabase
+        .from('analyses')
+        .select('id, analysis_type, dataset_version, ml_readiness_score, results, created_at')
+        .eq('dataset_id', id)
+        .eq('analysis_type', 'ml_readiness')
+        .eq('dataset_version', 0)
+        .order('created_at', { ascending: true })
+        .limit(1)
+        .maybeSingle()
+    : Promise.resolve({ data: null })
+
+  const [
+    { data: currentFullAnalysis },
+    { data: currentMLAnalysis },
+    { data: transformations },
+    { data: cachedInsightsRecord },
+    { data: fetchedInitialFull },
+    { data: fetchedInitialML }
+  ] = await Promise.all([
+    currentFullPromise,
+    currentMLPromise,
+    transformationsPromise,
+    cachedInsightsPromise,
+    initialFullPromise,
+    initialMLPromise
+  ])
+
+  const initialFullAnalysis = currentVersion === 0 ? currentFullAnalysis : fetchedInitialFull
+  const initialMLAnalysis = currentVersion === 0 ? currentMLAnalysis : fetchedInitialML
 
   // Merge the analysis objects
   const analysis = currentFullAnalysis ? {
     ...currentFullAnalysis,
+    dataset_version: currentFullAnalysis.dataset_version ?? 0,
     results: {
       ...currentFullAnalysis.results,
       mlReadiness: currentMLAnalysis?.results || currentFullAnalysis.results?.mlReadiness
     }
   } : null
 
-  const initialAnalysisMerged = (initialFullAnalysis || currentFullAnalysis) ? {
-    ...(initialFullAnalysis || currentFullAnalysis),
+  const initialBase = initialFullAnalysis || currentFullAnalysis
+  const initialAnalysisMerged = initialBase ? {
+    ...initialBase,
+    dataset_version: initialBase.dataset_version ?? 0,
+    ml_readiness_score: initialBase.ml_readiness_score ?? null,
     results: {
-      ...(initialFullAnalysis || currentFullAnalysis)?.results,
-      mlReadiness: initialMLAnalysis?.results || (initialFullAnalysis || currentFullAnalysis)?.results?.mlReadiness
+      ...initialBase.results,
+      mlReadiness: initialMLAnalysis?.results || initialBase.results?.mlReadiness
     }
   } : null
 
-  // 3. Fetch Transformation History
-  const { data: transformations } = await supabase
-    .from('dataset_transformations')
-    .select('*')
-    .eq('dataset_id', id)
-    .order('new_version', { ascending: false })
+  const initialInsights = (cachedInsightsRecord?.results && typeof cachedInsightsRecord.results === 'object')
+    ? (cachedInsightsRecord.results as unknown as AIInsightsResponse)
+    : null
 
   const sampleData = dataset.sample_data || []
   const columns = dataset.column_metadata || []
@@ -197,7 +239,7 @@ export default async function DatasetPage({ params }: { params: Promise<{ id: st
           </p>
         </div>
         <div className="flex gap-2">
-          <ExportButton datasetId={dataset.id} currentVersion={currentVersion} />
+          <ExportButton datasetId={dataset.id} datasetName={dataset.name} currentVersion={currentVersion} />
         </div>
       </div>
 
@@ -230,7 +272,12 @@ export default async function DatasetPage({ params }: { params: Promise<{ id: st
 
         {/* 1. AI Insights */}
         <TabsContent value="insights" className="mt-6">
-          <AIInsightsTab datasetId={dataset.id} analysis={analysis} dataset={dataset} />
+          <AIInsightsTab
+            datasetId={dataset.id}
+            analysis={analysis}
+            dataset={dataset}
+            initialInsights={initialInsights}
+          />
         </TabsContent>
 
         {/* 2. ML Readiness (Deterministic Score & Component Breakdown) */}
@@ -371,42 +418,16 @@ export default async function DatasetPage({ params }: { params: Promise<{ id: st
 
         {/* 2. Preview */}
         <TabsContent value="preview" className="mt-6">
-          <Card className="border-border/80 shadow-xs overflow-hidden">
-            <CardHeader className="border-b border-border/60 pb-4">
-              <CardTitle className="text-base font-semibold">Data Preview</CardTitle>
-              <CardDescription className="text-xs">Displaying active dataset records (Version {currentVersion}, first {sampleData.length} rows)</CardDescription>
-            </CardHeader>
-            <CardContent className="p-0 overflow-x-auto">
-              {sampleData.length > 0 ? (
-                <table className="w-full text-sm text-left border-collapse">
-                  <thead className="text-[11px] uppercase tracking-wider bg-muted/70 text-muted-foreground border-b border-border/70 sticky top-0">
-                    <tr>
-                      {columns.map((col: { name: string }, i: number) => (
-                        <th key={i} className="px-4 py-3 border-r border-border/50 last:border-r-0 whitespace-nowrap font-semibold">{col.name}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border/60">
-                    {sampleData.map((row: Record<string, unknown>, i: number) => (
-                      <tr key={i} className="hover:bg-indigo-50/30 dark:hover:bg-indigo-950/20 transition-colors">
-                        {columns.map((col: { name: string }, j: number) => (
-                          <td key={j} className="px-4 py-2.5 border-r border-border/40 last:border-r-0 whitespace-nowrap max-w-[220px] truncate text-xs text-foreground/90 font-mono">
-                            {row[col.name] === null || row[col.name] === undefined ? (
-                              <span className="text-muted-foreground/60 italic font-sans">null</span>
-                            ) : (
-                              String(row[col.name])
-                            )}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <p className="text-sm text-muted-foreground p-8 text-center">No preview data available for this version.</p>
-              )}
-            </CardContent>
-          </Card>
+          <DatasetPreviewTable
+            columns={columns}
+            data={sampleData}
+            totalRows={dataset.row_count ?? sampleData.length}
+            totalColumns={dataset.column_count ?? columns.length}
+            currentVersion={currentVersion}
+            maxHeight="520px"
+            caption={`Active records for ${dataset.name} (Version ${currentVersion})`}
+            emptyMessage="No preview data available for this version."
+          />
         </TabsContent>
 
         {/* 3. Summary */}
@@ -538,8 +559,12 @@ export default async function DatasetPage({ params }: { params: Promise<{ id: st
         <TabsContent value="transform" className="mt-6">
           <TransformTab
             datasetId={dataset.id}
+            datasetName={dataset.name}
             columns={columns}
             currentVersion={currentVersion}
+            initialSampleData={sampleData}
+            rowCount={dataset.row_count ?? sampleData.length}
+            columnCount={dataset.column_count ?? columns.length}
           />
         </TabsContent>
 

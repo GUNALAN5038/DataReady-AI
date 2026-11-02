@@ -1,0 +1,17 @@
+{
+  "name": "dataready-ai-testing",
+  "version": "1.0.0",
+  "description": "Isolated testing infrastructure for DataReady AI",
+  "private": true,
+  "scripts": {
+    "test:web": "npm --prefix web-selenium run test",
+    "test:mobile": "npm --prefix mobile-appium run test",
+    "test:performance": "node api-load-testing/scripts/run-load-test.js",
+    "test:security": "node security-testing/scripts/run-security-test.js",
+    "reports:generate": "node shared/report-utils/consolidate-reports.js",
+    "test:all": "npm run test:web && npm run test:performance && npm run test:security && npm run test:mobile && npm run reports:generate"
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0"
+  }
+}

@@ -1,0 +1,206 @@
+const fs = require('fs');
+const path = require('path');
+
+/**
+ * Builds standalone, responsive HTML test reports with modern analytics dashboard design
+ */
+class HtmlReportBuilder {
+  constructor(reportTitle, categoryName) {
+    this.reportTitle = reportTitle;
+    this.categoryName = categoryName;
+  }
+
+  generateHtml(summary, testCases, extraSections = '') {
+    const passRate = summary.total > 0 ? Math.round((summary.passed / summary.total) * 100) : 0;
+    const dateStr = new Date().toLocaleString();
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DataReady AI — ${this.reportTitle}</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #3b82f6;
+      --success: #10b981;
+      --success-bg: rgba(16, 185, 129, 0.15);
+      --danger: #ef4444;
+      --danger-bg: rgba(239, 68, 68, 0.15);
+      --warning: #f59e0b;
+      --warning-bg: rgba(245, 158, 11, 0.15);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: var(--bg); color: var(--text-main); padding: 2rem; min-height: 100vh; }
+    .container { max-width: 1400px; margin: 0 auto; }
+    header {
+      background: linear-gradient(135deg, #1e3a8a 0%, #312e81 100%);
+      padding: 2rem;
+      border-radius: 1rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .header-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+    h1 { font-size: 1.8rem; font-weight: 700; color: #ffffff; letter-spacing: -0.025em; }
+    .badge-category { background: rgba(59, 130, 246, 0.3); border: 1px solid #60a5fa; color: #93c5fd; padding: 0.3rem 0.8rem; border-radius: 9999px; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; }
+    .meta-bar { margin-top: 1rem; font-size: 0.9rem; color: #cbd5e1; display: flex; gap: 2rem; flex-wrap: wrap; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .kpi-card { background: var(--card-bg); border: 1px solid var(--card-border); padding: 1.5rem; border-radius: 0.75rem; }
+    .kpi-label { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+    .kpi-val { font-size: 2rem; font-weight: 700; color: var(--text-main); }
+    .kpi-val.pass { color: var(--success); }
+    .kpi-val.fail { color: var(--danger); }
+    .kpi-val.warn { color: var(--warning); }
+    .filter-bar { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .filter-btn { background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-muted); padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: all 0.2s; }
+    .filter-btn.active, .filter-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .table-container { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 0.75rem; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2); margin-bottom: 2rem; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
+    th { background: #0f172a; padding: 1rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; border-bottom: 1px solid var(--card-border); }
+    td { padding: 1rem; border-bottom: 1px solid rgba(51, 65, 85, 0.5); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover { background: rgba(255, 255, 255, 0.02); }
+    .status-badge { display: inline-block; padding: 0.25rem 0.65rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+    .status-pass { background: var(--success-bg); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .status-fail { background: var(--danger-bg); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .status-blocked { background: var(--warning-bg); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .status-skipped { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3); }
+    .code-box { background: #0b0f19; padding: 0.5rem; border-radius: 0.375rem; font-family: monospace; font-size: 0.8rem; color: #fca5a5; max-height: 150px; overflow-y: auto; white-space: pre-wrap; margin-top: 0.5rem; border: 1px solid #7f1d1d; }
+    .thumb-link { display: inline-block; color: #60a5fa; text-decoration: underline; font-size: 0.8rem; margin-top: 0.3rem; }
+    footer { text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 2rem 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="header-top">
+        <h1>DataReady AI — ${this.reportTitle}</h1>
+        <span class="badge-category">${this.categoryName}</span>
+      </div>
+      <div class="meta-bar">
+        <span><strong>Environment:</strong> ${summary.environment || 'Local / Staging'}</span>
+        <span><strong>Executed At:</strong> ${dateStr}</span>
+        <span><strong>Framework:</strong> ${summary.framework || 'DataReady Automation Suite'}</span>
+        <span><strong>Total Duration:</strong> ${summary.durationMs ? `${(summary.durationMs / 1000).toFixed(2)}s` : 'N/A'}</span>
+      </div>
+    </header>
+
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Total Tests</div>
+        <div class="kpi-val">${summary.total || 0}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Passed</div>
+        <div class="kpi-val pass">${summary.passed || 0}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Failed</div>
+        <div class="kpi-val fail">${summary.failed || 0}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Blocked</div>
+        <div class="kpi-val warn">${summary.blocked || 0}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Skipped</div>
+        <div class="kpi-val" style="color: #94a3b8;">${summary.skipped || 0}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Pass Rate</div>
+        <div class="kpi-val ${passRate >= 90 ? 'pass' : (passRate >= 70 ? 'warn' : 'fail')}">${summary.passRate !== undefined ? `${summary.passRate}%` : `${passRate}%`}</div>
+      </div>
+    </div>
+
+    ${extraSections}
+
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="filterTable('all')">All Tests (${summary.total || 0})</button>
+      <button class="filter-btn" onclick="filterTable('PASS')">Passed (${summary.passed || 0})</button>
+      <button class="filter-btn" onclick="filterTable('FAIL')">Failed (${summary.failed || 0})</button>
+      <button class="filter-btn" onclick="filterTable('BLOCKED')">Blocked (${summary.blocked || 0})</button>
+      ${(summary.skipped || 0) > 0 ? `<button class="filter-btn" onclick="filterTable('SKIPPED')">Skipped (${summary.skipped || 0})</button>` : ''}
+    </div>
+
+    <div class="table-container">
+      <table id="test-table">
+        <thead>
+          <tr>
+            <th>Test ID</th>
+            <th>Module</th>
+            <th>Test Case</th>
+            <th>Expected Result</th>
+            <th>Actual Result</th>
+            <th>Status</th>
+            <th>Duration</th>
+            <th>Details / Evidence</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${testCases.map(tc => {
+            const statusUpper = String(tc.status || '').toUpperCase();
+            const badgeClass = statusUpper === 'PASS' || statusUpper === 'PASSED' ? 'status-pass' : (statusUpper === 'FAIL' || statusUpper === 'FAILED' ? 'status-fail' : (statusUpper === 'SKIPPED' ? 'status-skipped' : 'status-blocked'));
+
+            return `
+            <tr data-status="${statusUpper}">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">${tc.testId || tc.id}</td>
+              <td><strong>${tc.module}</strong></td>
+              <td>${tc.testCase || tc.name}</td>
+              <td style="color: var(--text-muted);">${tc.expectedResult || tc.expected || ''}</td>
+              <td>${tc.actualResult || tc.actual || ''}</td>
+              <td><span class="status-badge ${badgeClass}">${tc.status}</span></td>
+              <td style="font-family: monospace;">${tc.durationMs !== undefined ? `${tc.durationMs}ms` : '-'}</td>
+              <td>
+                ${tc.errorDetails ? `<div class="code-box">${tc.errorDetails}</div>` : ''}
+                ${tc.screenshotPath ? `<a class="thumb-link" href="${tc.screenshotPath}" target="_blank">View Screenshot</a>` : ''}
+                ${tc.device ? `<div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.2rem;">Device: ${tc.device} (${tc.androidVersion || 'Android'})</div>` : ''}
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <footer>
+      DataReady AI Automated Quality Assurance & Testing Infrastructure &bull; Generated automatically
+    </footer>
+  </div>
+
+  <script>
+    function filterTable(status) {
+      document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      const rows = document.querySelectorAll('#test-table tbody tr');
+      rows.forEach(row => {
+        const rowStatus = row.getAttribute('data-status');
+        if (status === 'all' || rowStatus === status || (status === 'BLOCKED' && (rowStatus === 'BLOCKED' || rowStatus === 'NOT EXECUTED' || rowStatus === 'SKIPPED'))) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+  </script>
+</body>
+</html>`;
+  }
+
+  saveToFile(outputPath, summary, testCases, extraSections = '') {
+    const dir = path.dirname(outputPath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    const html = this.generateHtml(summary, testCases, extraSections);
+    fs.writeFileSync(outputPath, html, 'utf-8');
+    return outputPath;
+  }
+}
+
+module.exports = { HtmlReportBuilder };

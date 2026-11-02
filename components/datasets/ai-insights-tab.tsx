@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { 
   Sparkles, 
   Loader2, 
@@ -21,56 +22,109 @@ import {
   Info,
   TrendingUp,
   BrainCircuit,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Key,
+  Clock
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { AIInsightsResponse, AISmartRecommendation, SeverityLevel, PriorityLevel } from '@/types/insights'
 import { DatasetTransformation, FillMissingMethod } from '@/types/transformations'
+import { cn } from '@/lib/utils'
+
+export interface InsightErrorState {
+  message: string
+  code?: string
+  isDailyQuota?: boolean
+  retryable?: boolean
+  canRunAnalysis?: boolean
+  configureKeyUrl?: string
+}
 
 interface AIInsightsTabProps {
   datasetId: string
   analysis: Record<string, unknown> | null
   dataset: Record<string, unknown>
+  initialInsights?: AIInsightsResponse | null
 }
 
-export function AIInsightsTab({ datasetId, analysis, dataset }: AIInsightsTabProps) {
-  const [insights, setInsights] = useState<AIInsightsResponse | null>(null)
-  const [loading, setLoading] = useState(true)
+export function AIInsightsTab({ datasetId, analysis, dataset, initialInsights }: AIInsightsTabProps) {
+  const [insights, setInsights] = useState<AIInsightsResponse | null>(initialInsights || null)
+  const [loading, setLoading] = useState<boolean>(!initialInsights)
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [errorState, setErrorState] = useState<InsightErrorState | null>(null)
   const [applyingIndex, setApplyingIndex] = useState<number | null>(null)
   const [transformationSuccess, setTransformationSuccess] = useState<string | null>(null)
+  const [analysisSuccess, setAnalysisSuccess] = useState<string | null>(null)
   const router = useRouter()
 
-  const refreshInsights = async (showLoadingOverlay = false) => {
+  const handleRunAnalysis = async () => {
+    try {
+      setIsAnalyzing(true)
+      setErrorState(null)
+      setTransformationSuccess(null)
+      setAnalysisSuccess(null)
+
+      const res = await fetch(`/api/datasets/${datasetId}/analyze`, {
+        method: 'POST'
+      })
+
+      const data = await res.json().catch(() => ({}))
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to analyze dataset.')
+      }
+
+      setAnalysisSuccess('Dataset analysis completed successfully! Generating AI insights...')
+      router.refresh()
+      await refreshInsights(true, true)
+    } catch (err: unknown) {
+      setErrorState({
+        message: err instanceof Error ? err.message : 'Dataset analysis failed. Please try again.',
+        code: 'ANALYSIS_FAILED',
+        canRunAnalysis: true,
+        retryable: true,
+      })
+    } finally {
+      setIsAnalyzing(false)
+    }
+  }
+
+  const refreshInsights = async (showLoadingOverlay = false, forceRefresh = false) => {
     if (showLoadingOverlay) {
       setLoading(true)
     } else {
       setIsRefreshing(true)
     }
-    setError(null)
+    setErrorState(null)
     setTransformationSuccess(null)
 
     try {
-      const res = await fetch(`/api/datasets/${datasetId}/insights`, {
+      const url = `/api/datasets/${datasetId}/insights${forceRefresh ? '?refresh=true' : ''}`
+      const res = await fetch(url, {
         cache: 'no-store'
       })
 
+      const data = await res.json().catch(() => ({}))
+
       if (!res.ok) {
-        let errMsg = `Failed to generate AI insights (${res.status})`
-        try {
-          const errData = await res.json()
-          if (errData.error) errMsg = errData.error
-        } catch {
-          // JSON parse failed, use fallback
-        }
-        throw new Error(errMsg)
+        setErrorState({
+          message: data.error || `Failed to generate AI insights (${res.status})`,
+          code: data.code,
+          isDailyQuota: Boolean(data.isDailyQuota),
+          retryable: Boolean(data.retryable),
+          canRunAnalysis: Boolean(data.canRunAnalysis),
+          configureKeyUrl: data.configureKeyUrl,
+        })
+        return
       }
 
-      const data: AIInsightsResponse = await res.json()
-      setInsights(data)
+      setInsights(data as AIInsightsResponse)
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred while fetching AI insights.')
+      setErrorState({
+        message: err instanceof Error ? err.message : 'An unexpected error occurred while fetching AI insights.',
+        retryable: true,
+      })
     } finally {
       setLoading(false)
       setIsRefreshing(false)
@@ -80,32 +134,46 @@ export function AIInsightsTab({ datasetId, analysis, dataset }: AIInsightsTabPro
   useEffect(() => {
     let ignore = false
 
+    // If initialInsights were already supplied for this version, do not refetch
+    if (initialInsights) {
+      setInsights(initialInsights)
+      setLoading(false)
+      return
+    }
+
     async function loadInitialInsights() {
       try {
-        setError(null)
+        setErrorState(null)
         setTransformationSuccess(null)
         const res = await fetch(`/api/datasets/${datasetId}/insights`, {
           cache: 'no-store'
         })
 
+        const data = await res.json().catch(() => ({}))
+
         if (!res.ok) {
-          let errMsg = `Failed to generate AI insights (${res.status})`
-          try {
-            const errData = await res.json()
-            if (errData.error) errMsg = errData.error
-          } catch {
-            // fallback
+          if (!ignore) {
+            setErrorState({
+              message: data.error || `Failed to generate AI insights (${res.status})`,
+              code: data.code,
+              isDailyQuota: Boolean(data.isDailyQuota),
+              retryable: Boolean(data.retryable),
+              canRunAnalysis: Boolean(data.canRunAnalysis),
+              configureKeyUrl: data.configureKeyUrl,
+            })
           }
-          throw new Error(errMsg)
+          return
         }
 
-        const data: AIInsightsResponse = await res.json()
         if (!ignore) {
-          setInsights(data)
+          setInsights(data as AIInsightsResponse)
         }
       } catch (err: unknown) {
         if (!ignore) {
-          setError(err instanceof Error ? err.message : 'An unexpected error occurred while fetching AI insights.')
+          setErrorState({
+            message: err instanceof Error ? err.message : 'An unexpected error occurred while fetching AI insights.',
+            retryable: true,
+          })
         }
       } finally {
         if (!ignore) {
@@ -119,7 +187,7 @@ export function AIInsightsTab({ datasetId, analysis, dataset }: AIInsightsTabPro
     return () => {
       ignore = true
     }
-  }, [datasetId])
+  }, [datasetId, initialInsights])
 
   // Execute a recommended transformation via the backend bridge
   const handleApplyTransformation = async (rec: AISmartRecommendation, index: number) => {
@@ -130,7 +198,7 @@ export function AIInsightsTab({ datasetId, analysis, dataset }: AIInsightsTabPro
 
     try {
       setApplyingIndex(index)
-      setError(null)
+      setErrorState(null)
       setTransformationSuccess(null)
 
       let transformPayload: DatasetTransformation | null = null
@@ -201,12 +269,15 @@ export function AIInsightsTab({ datasetId, analysis, dataset }: AIInsightsTabPro
 
       setTransformationSuccess(`Transformation applied! Created Version ${data.newVersion} (${data.affectedRows} rows, ${data.affectedColumns} columns modified).`)
       
-      // Refresh page data and re-fetch AI insights
+      // Refresh page data and re-fetch fresh AI insights for new version
       router.refresh()
-      await refreshInsights(false)
+      await refreshInsights(false, true)
 
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Transformation failed.')
+      setErrorState({
+        message: err instanceof Error ? err.message : 'Transformation failed.',
+        retryable: true,
+      })
     } finally {
       setApplyingIndex(null)
     }
@@ -278,7 +349,7 @@ export function AIInsightsTab({ datasetId, analysis, dataset }: AIInsightsTabPro
           <Button
             variant="outline"
             size="sm"
-            onClick={() => refreshInsights(false)}
+            onClick={() => refreshInsights(false, true)}
             disabled={loading || isRefreshing}
             className="flex items-center gap-2 rounded-xl border-border/80 hover:bg-background/80 text-xs font-medium"
           >
@@ -297,22 +368,134 @@ export function AIInsightsTab({ datasetId, analysis, dataset }: AIInsightsTabPro
         </Alert>
       )}
 
-      {/* Error Banner with Retry */}
-      {error && (
-        <Alert variant="destructive" className="border-red-500 bg-red-50 dark:bg-red-950/30">
-          <AlertCircle className="h-5 w-5" />
-          <AlertTitle className="font-semibold">AI Insights Unavailable</AlertTitle>
-          <AlertDescription className="mt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <p className="text-sm">{error}</p>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => refreshInsights(true)}
-              className="border-red-300 text-red-900 hover:bg-red-100 dark:text-red-200 dark:hover:bg-red-900/50 flex-shrink-0"
-            >
-              <RefreshCw className="mr-2 h-4 w-4" /> Try Again
-            </Button>
-          </AlertDescription>
+      {/* Analysis Success Banner */}
+      {analysisSuccess && (
+        <Alert className="border-emerald-500/40 text-emerald-800 dark:text-emerald-300 bg-emerald-50/80 dark:bg-emerald-950/30 rounded-xl">
+          <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+          <AlertTitle className="font-semibold text-sm">Analysis Ready</AlertTitle>
+          <AlertDescription className="text-xs">{analysisSuccess}</AlertDescription>
+        </Alert>
+      )}
+
+      {/* Error Banner with Smart Actions */}
+      {errorState && (
+        <Alert
+          variant="destructive"
+          className={cn(
+            "rounded-2xl border transition-all p-5 shadow-xs",
+            errorState.isDailyQuota
+              ? "border-amber-500/50 bg-amber-50/70 text-amber-900 dark:bg-amber-950/30 dark:text-amber-200 dark:border-amber-900/60"
+              : errorState.code === 'INVALID_API_KEY' || errorState.code === 'PROVIDER_NOT_CONFIGURED' || errorState.code === 'DECRYPTION_FAILED'
+              ? "border-indigo-500/50 bg-indigo-50/70 text-indigo-900 dark:bg-indigo-950/30 dark:text-indigo-200 dark:border-indigo-900/60"
+              : errorState.canRunAnalysis || errorState.code === 'ANALYSIS_MISSING' || errorState.code === 'ANALYSIS_INCOMPLETE' || errorState.code === 'ANALYSIS_PENDING' || errorState.code === 'DATASET_UPLOADING'
+              ? "border-blue-500/50 bg-blue-50/70 text-blue-900 dark:bg-blue-950/30 dark:text-blue-200 dark:border-blue-900/60"
+              : "border-red-500/50 bg-red-50/70 text-red-900 dark:bg-red-950/30 dark:text-red-200"
+          )}
+        >
+          <div className="flex items-start gap-3.5">
+            {errorState.isDailyQuota ? (
+              <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+            ) : errorState.code === 'INVALID_API_KEY' || errorState.code === 'PROVIDER_NOT_CONFIGURED' || errorState.code === 'DECRYPTION_FAILED' ? (
+              <Key className="h-5 w-5 text-indigo-600 dark:text-indigo-400 mt-0.5 shrink-0" />
+            ) : errorState.code === 'ANALYSIS_PENDING' || errorState.code === 'DATASET_UPLOADING' ? (
+              <Loader2 className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 animate-spin shrink-0" />
+            ) : errorState.canRunAnalysis || errorState.code === 'ANALYSIS_MISSING' || errorState.code === 'ANALYSIS_INCOMPLETE' ? (
+              <Sparkles className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
+            ) : (
+              <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5 shrink-0" />
+            )}
+
+            <div className="flex-1 space-y-1.5">
+              <AlertTitle className="font-semibold text-sm">
+                {errorState.isDailyQuota
+                  ? "Gemini API Daily Quota Reached"
+                  : errorState.code === 'INVALID_API_KEY'
+                  ? "Invalid Gemini API Key"
+                  : errorState.code === 'DECRYPTION_FAILED'
+                  ? "API Key Decryption Error"
+                  : errorState.code === 'PROVIDER_NOT_CONFIGURED'
+                  ? "AI Provider Not Configured"
+                  : errorState.code === 'ANALYSIS_MISSING' || errorState.code === 'ANALYSIS_INCOMPLETE'
+                  ? "Dataset Analysis Required"
+                  : errorState.code === 'ANALYSIS_PENDING' || errorState.code === 'DATASET_UPLOADING'
+                  ? "Analysis in Progress"
+                  : errorState.code === 'ANALYSIS_FAILED'
+                  ? "Dataset Analysis Failed"
+                  : errorState.code === 'MODEL_UNAVAILABLE'
+                  ? "AI Model Unavailable"
+                  : errorState.code === 'RATE_LIMITED'
+                  ? "Rate Limit Exceeded"
+                  : "AI Insights Unavailable"}
+              </AlertTitle>
+
+              <AlertDescription className="text-xs leading-relaxed">
+                {errorState.message}
+              </AlertDescription>
+
+              <div className="pt-2 flex items-center gap-2.5 flex-wrap">
+                {/* Recovery button to run dataset analysis */}
+                {(errorState.canRunAnalysis || errorState.code === 'ANALYSIS_MISSING' || errorState.code === 'ANALYSIS_FAILED' || errorState.code === 'ANALYSIS_INCOMPLETE') && (
+                  <Button
+                    onClick={handleRunAnalysis}
+                    disabled={isAnalyzing || loading}
+                    className="h-8 text-xs font-semibold rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 hover:from-blue-700 hover:to-violet-700 text-white shadow-xs flex items-center gap-1.5"
+                  >
+                    {isAnalyzing ? (
+                      <>
+                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                        Analyzing Dataset...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+                        {errorState.code === 'ANALYSIS_FAILED' ? 'Retry Dataset Analysis' : 'Run Dataset Analysis Now'}
+                      </>
+                    )}
+                  </Button>
+                )}
+
+                {/* Check status for pending analysis */}
+                {(errorState.code === 'ANALYSIS_PENDING' || errorState.code === 'DATASET_UPLOADING') && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => refreshInsights(true, true)}
+                    className="h-8 text-xs font-semibold rounded-xl bg-background/80 hover:bg-background border-border/80 shadow-xs flex items-center gap-1.5"
+                  >
+                    <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
+                    Check Status
+                  </Button>
+                )}
+
+                {/* Link to Settings -> AI Keys whenever key, decryption, or quota is the issue */}
+                {(errorState.isDailyQuota || errorState.configureKeyUrl || errorState.code === 'INVALID_API_KEY' || errorState.code === 'PROVIDER_NOT_CONFIGURED' || errorState.code === 'DECRYPTION_FAILED') && (
+                  <Link
+                    href="/settings/keys"
+                    className={cn(
+                      buttonVariants({ variant: 'outline', size: 'sm' }),
+                      "h-8 text-xs font-semibold rounded-xl bg-background/80 hover:bg-background border-border/80 shadow-xs flex items-center gap-1.5"
+                    )}
+                  >
+                    <Key className="h-3.5 w-3.5" />
+                    Configure AI Key in Settings
+                  </Link>
+                )}
+
+                {/* Only provide Retry action when retrying is reasonable (NOT on daily quota or invalid key or missing analysis) */}
+                {errorState.retryable && !errorState.isDailyQuota && !errorState.canRunAnalysis && errorState.code !== 'ANALYSIS_MISSING' && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => refreshInsights(true, true)}
+                    className="h-8 text-xs font-semibold rounded-xl bg-background/80 hover:bg-background border-border/80 shadow-xs flex items-center gap-1.5"
+                  >
+                    <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
+                    Try Again
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
         </Alert>
       )}
 

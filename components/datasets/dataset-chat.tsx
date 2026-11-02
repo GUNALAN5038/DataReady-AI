@@ -4,10 +4,10 @@ import { useChat } from 'ai/react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import { MarkdownMessage } from '@/components/chat/markdown-message'
 import { Send, Bot, User, AlertCircle } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 
 export function DatasetChat({ datasetId }: { datasetId?: string }) {
   const { messages, input, handleInputChange, handleSubmit, error, isLoading } = useChat({
@@ -15,17 +15,41 @@ export function DatasetChat({ datasetId }: { datasetId?: string }) {
     body: { datasetId }
   })
   
-  const scrollRef = useRef<HTMLDivElement>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const isAtBottomRef = useRef(true)
+
+  const handleScroll = useCallback(() => {
+    const el = scrollContainerRef.current
+    if (!el) return
+    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight <= 80
+    isAtBottomRef.current = atBottom
+  }, [])
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+    if (isAtBottomRef.current && scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({
+        top: scrollContainerRef.current.scrollHeight,
+        behavior: 'smooth',
+      })
     }
   }, [messages])
 
+  const handleSendMessage = (e: React.FormEvent<HTMLFormElement>) => {
+    isAtBottomRef.current = true
+    handleSubmit(e)
+    setTimeout(() => {
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTo({
+          top: scrollContainerRef.current.scrollHeight,
+          behavior: 'smooth',
+        })
+      }
+    }, 50)
+  }
+
   return (
-    <Card className="flex flex-col h-[600px] max-h-[70vh] overflow-hidden border border-border/80 rounded-2xl bg-card/70 backdrop-blur-xs shadow-sm">
-      <CardHeader className="border-b border-border/60 bg-muted/30 py-3 px-5 flex flex-row items-center justify-between">
+    <Card className="flex flex-col h-[600px] max-h-[70vh] min-h-0 overflow-hidden border border-border/80 rounded-2xl bg-card/70 backdrop-blur-xs shadow-sm">
+      <CardHeader className="border-b border-border/60 bg-muted/30 py-3 px-5 flex flex-row items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-2">
           <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
           <CardTitle className="text-sm font-semibold text-foreground flex items-center gap-1.5">
@@ -37,7 +61,13 @@ export function DatasetChat({ datasetId }: { datasetId?: string }) {
         </span>
       </CardHeader>
       
-      <ScrollArea className="flex-1 p-5" ref={scrollRef}>
+      <div 
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        className="flex-1 min-h-0 overflow-y-auto p-5 focus:outline-hidden"
+        tabIndex={0}
+        aria-label="Dataset chat messages"
+      >
         {error && (() => {
           let msg = error.message
           try {
@@ -112,12 +142,16 @@ export function DatasetChat({ datasetId }: { datasetId?: string }) {
                   <Bot className="h-4 w-4" />
                 </div>
               )}
-              <div className={`rounded-2xl px-4 py-3 max-w-[82%] text-sm leading-relaxed ${
+              <div className={`rounded-2xl px-4 py-3 max-w-[85%] text-sm leading-relaxed ${
                 m.role === 'user' 
                   ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs shadow-indigo-500/15 rounded-br-xs' 
                   : 'bg-card border border-border/80 text-foreground shadow-xs rounded-bl-xs'
               }`}>
-                <p className="whitespace-pre-wrap">{m.content}</p>
+                {m.role === 'assistant' ? (
+                  <MarkdownMessage content={m.content} />
+                ) : (
+                  <p className="whitespace-pre-wrap break-words">{m.content}</p>
+                )}
               </div>
               {m.role === 'user' && (
                 <div className="h-8 w-8 rounded-xl bg-muted/80 border border-border/80 flex items-center justify-center text-muted-foreground flex-shrink-0 mt-0.5">
@@ -141,10 +175,10 @@ export function DatasetChat({ datasetId }: { datasetId?: string }) {
             </div>
           )}
         </div>
-      </ScrollArea>
+      </div>
 
-      <CardContent className="p-3 border-t border-border/60 bg-muted/20">
-        <form onSubmit={handleSubmit} className="flex gap-2 items-center">
+      <CardContent className="p-3 border-t border-border/60 bg-muted/20 flex-shrink-0">
+        <form onSubmit={handleSendMessage} className="flex gap-2 items-center">
           <Input
             value={input}
             onChange={handleInputChange}
@@ -166,3 +200,4 @@ export function DatasetChat({ datasetId }: { datasetId?: string }) {
     </Card>
   )
 }
+

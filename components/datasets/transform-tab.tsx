@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -24,6 +24,8 @@ import {
 } from 'lucide-react'
 import { DatasetTransformation, TransformationPreviewResult, TargetDataType, FillMissingMethod } from '@/types/transformations'
 import { TransformationPreviewDialog } from './transformation-preview'
+import { DatasetPreviewTable } from './dataset-preview-table'
+import { ExportButton } from './export-button'
 
 interface ColumnMeta {
   name: string
@@ -32,16 +34,43 @@ interface ColumnMeta {
 
 interface TransformTabProps {
   datasetId: string
+  datasetName?: string
   columns: ColumnMeta[]
   currentVersion?: number
+  initialSampleData?: Record<string, unknown>[]
+  rowCount?: number
+  columnCount?: number
 }
 
-export function TransformTab({ datasetId, columns, currentVersion = 0 }: TransformTabProps) {
+export function TransformTab({
+  datasetId,
+  datasetName,
+  columns,
+  currentVersion = 0,
+  initialSampleData,
+  rowCount,
+  columnCount,
+}: TransformTabProps) {
   const router = useRouter()
   const [isTransforming, setIsTransforming] = useState(false)
   const [isPreviewing, setIsPreviewing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+
+  // Dynamic state tracking dataset changes
+  const [activeVersion, setActiveVersion] = useState(currentVersion)
+  const [activeColumns, setActiveColumns] = useState<ColumnMeta[]>(columns)
+  const [activeSampleData, setActiveSampleData] = useState<Record<string, unknown>[]>(initialSampleData || [])
+  const [activeRowCount, setActiveRowCount] = useState<number>(rowCount ?? initialSampleData?.length ?? 0)
+  const [activeColumnCount, setActiveColumnCount] = useState<number>(columnCount ?? columns.length)
+
+  useEffect(() => {
+    setActiveVersion(currentVersion)
+    setActiveColumns(columns)
+    if (initialSampleData) setActiveSampleData(initialSampleData)
+    if (rowCount !== undefined) setActiveRowCount(rowCount)
+    if (columnCount !== undefined) setActiveColumnCount(columnCount)
+  }, [currentVersion, columns, initialSampleData, rowCount, columnCount])
 
   // Preview dialog state
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false)
@@ -129,6 +158,18 @@ export function TransformTab({ datasetId, columns, currentVersion = 0 }: Transfo
       setPendingTransformations([])
       setPreviewData(null)
 
+      // Sync active state immediately with transformed dataset
+      if (data.dataset) {
+        if (data.dataset.current_version !== undefined) setActiveVersion(data.dataset.current_version)
+        if (data.dataset.column_metadata) setActiveColumns(data.dataset.column_metadata)
+        if (data.dataset.sample_data) setActiveSampleData(data.dataset.sample_data)
+        if (data.dataset.row_count !== undefined) setActiveRowCount(data.dataset.row_count)
+        if (data.dataset.column_count !== undefined) setActiveColumnCount(data.dataset.column_count)
+      } else if (data.newVersion !== undefined) {
+        setActiveVersion(data.newVersion)
+        if (data.rowsAfter !== undefined) setActiveRowCount(data.rowsAfter)
+      }
+
       // Reset form states
       setSelectedColumnsToDrop([])
       setRowIndicesToDrop('')
@@ -149,7 +190,7 @@ export function TransformTab({ datasetId, columns, currentVersion = 0 }: Transfo
       setError('Please select at least one column to drop.')
       return
     }
-    if (selectedColumnsToDrop.length >= columns.length) {
+    if (selectedColumnsToDrop.length >= activeColumns.length) {
       setError('Cannot drop all columns. At least one column must remain in the dataset.')
       return
     }
@@ -258,7 +299,7 @@ export function TransformTab({ datasetId, columns, currentVersion = 0 }: Transfo
       setError('Please enter a valid new column name.')
       return
     }
-    if (trimmed !== renameTarget && columns.some(c => c.name.toLowerCase() === trimmed.toLowerCase())) {
+    if (trimmed !== renameTarget && activeColumns.some(c => c.name.toLowerCase() === trimmed.toLowerCase())) {
       setError(`A column named "${trimmed}" already exists. Column names must be unique.`)
       return
     }
@@ -308,6 +349,49 @@ export function TransformTab({ datasetId, columns, currentVersion = 0 }: Transfo
           <AlertDescription className="text-xs">{success}</AlertDescription>
         </Alert>
       )}
+
+      {/* 1. Current Transformed Dataset Live Preview & Export Toolbar */}
+      <Card className="rounded-2xl border-border/80 shadow-xs overflow-hidden">
+        <CardHeader className="pb-3 border-b border-border/60 bg-muted/20">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <CardTitle className="text-base font-semibold flex items-center gap-2 text-foreground">
+                  <Activity className="w-4 h-4 text-indigo-500" />
+                  Transformed Dataset Preview
+                </CardTitle>
+                <Badge className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-mono text-xs font-semibold px-2 py-0.5 rounded-full shadow-2xs">
+                  Active: Version {activeVersion}
+                </Badge>
+              </div>
+              <CardDescription className="text-xs mt-1">
+                Live view of dataset changes after transformations. Export this version directly or apply further transformations below.
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <ExportButton
+                datasetId={datasetId}
+                datasetName={datasetName}
+                currentVersion={activeVersion}
+                label={`Export v${activeVersion}`}
+                size="sm"
+              />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="p-4">
+          <DatasetPreviewTable
+            columns={activeColumns}
+            data={activeSampleData}
+            totalRows={activeRowCount}
+            totalColumns={activeColumnCount}
+            currentVersion={activeVersion}
+            maxHeight="380px"
+            caption={`Current active transformed version (v${activeVersion})`}
+            emptyMessage="No dataset records available to preview for this version."
+          />
+        </CardContent>
+      </Card>
 
       {/* Grid of Transformation Panels */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -363,7 +447,7 @@ export function TransformTab({ datasetId, columns, currentVersion = 0 }: Transfo
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Any Column (All Columns)</SelectItem>
-                  {columns.map(c => (
+                  {activeColumns.map(c => (
                     <SelectItem key={c.name} value={c.name}>Only if &quot;{c.name}&quot; is missing</SelectItem>
                   ))}
                 </SelectContent>
@@ -440,7 +524,7 @@ export function TransformTab({ datasetId, columns, currentVersion = 0 }: Transfo
                     <SelectValue placeholder="Choose column" />
                   </SelectTrigger>
                   <SelectContent>
-                    {columns.map(c => (
+                    {activeColumns.map(c => (
                       <SelectItem key={c.name} value={c.name}>{c.name}</SelectItem>
                     ))}
                   </SelectContent>
@@ -510,7 +594,7 @@ export function TransformTab({ datasetId, columns, currentVersion = 0 }: Transfo
                     <SelectValue placeholder="Choose column" />
                   </SelectTrigger>
                   <SelectContent>
-                    {columns.map(c => (
+                    {activeColumns.map(c => (
                       <SelectItem key={c.name} value={c.name}>{c.name}</SelectItem>
                     ))}
                   </SelectContent>
@@ -566,7 +650,7 @@ export function TransformTab({ datasetId, columns, currentVersion = 0 }: Transfo
                     <SelectValue placeholder="Choose column" />
                   </SelectTrigger>
                   <SelectContent>
-                    {columns.map(c => (
+                    {activeColumns.map(c => (
                       <SelectItem key={c.name} value={c.name}>{c.name}</SelectItem>
                     ))}
                   </SelectContent>
@@ -619,7 +703,7 @@ export function TransformTab({ datasetId, columns, currentVersion = 0 }: Transfo
                     <SelectValue placeholder="Choose column" />
                   </SelectTrigger>
                   <SelectContent>
-                    {columns.map(c => (
+                    {activeColumns.map(c => (
                       <SelectItem key={c.name} value={c.name}>{c.name}</SelectItem>
                     ))}
                   </SelectContent>
@@ -671,13 +755,13 @@ export function TransformTab({ datasetId, columns, currentVersion = 0 }: Transfo
                 </CardDescription>
               </div>
               <Badge variant="outline" className="text-xs font-mono border-border/80 bg-background/60">
-                {selectedColumnsToDrop.length} of {columns.length} selected
+                {selectedColumnsToDrop.length} of {activeColumns.length} selected
               </Badge>
             </div>
           </CardHeader>
           <CardContent className="space-y-4 pt-1">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-48 overflow-y-auto p-2.5 border border-border/80 rounded-xl bg-muted/20">
-              {columns.map(c => {
+              {activeColumns.map(c => {
                 const isChecked = selectedColumnsToDrop.includes(c.name)
                 return (
                   <label
@@ -742,7 +826,7 @@ export function TransformTab({ datasetId, columns, currentVersion = 0 }: Transfo
         onConfirm={handleExecutePendingTransformation}
         isApplying={isTransforming}
         previewData={previewData}
-        currentVersion={currentVersion}
+        currentVersion={activeVersion}
         transformationSummary={pendingSummary}
       />
     </div>

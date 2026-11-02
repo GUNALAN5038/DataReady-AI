@@ -1,0 +1,155 @@
+{
+  "summary": {
+    "total": 11,
+    "passed": 10,
+    "failed": 1,
+    "blocked": 0,
+    "critical": 0,
+    "high": 1,
+    "medium": 0,
+    "low": 0,
+    "info": 1,
+    "durationMs": 15579,
+    "environment": "Static Source Code & Architecture Security Audit",
+    "framework": "DataReady AI Automated Security Engine"
+  },
+  "findings": [
+    {
+      "id": "SEC-FIND-001",
+      "checkId": "SEC-DEP-001",
+      "title": "Known vulnerabilities in package dependencies requiring breaking major upgrades",
+      "severity": "High",
+      "component": "package.json dependencies",
+      "description": "Audit discovered packages requiring major framework upgrades (next@16.4.3, ai@7, shadcn@1.0.0, and unpatched upstream xlsx)",
+      "evidence": "Audit reported 26 total vulnerabilities (2 critical, 18 high, 5 moderate, 1 low)",
+      "reproduction": "Execute security check suite",
+      "impact": "Security deviation from standard baseline",
+      "remediation": "Monitor upstream security patches; schedule coordinated major framework migration",
+      "status": "OPEN"
+    },
+    {
+      "id": "SEC-FIND-002",
+      "checkId": "SEC-HDR-002",
+      "title": "Content-Security-Policy (CSP) Compatible Policy Recommendation",
+      "severity": "Informational",
+      "component": "Next.js Middleware & Header Configuration",
+      "description": "Current response headers lack an explicit Content-Security-Policy header restriction. A production-ready, compatible policy has been formulated based on actual runtime needs (Supabase Auth/WebSockets, Google Gemini streaming, Next.js inline scripts).",
+      "evidence": "Evaluation of runtime network dependencies: https://*.supabase.co, wss://*.supabase.co, https://generativelanguage.googleapis.com",
+      "reproduction": "Inspect headers returned from Next.js server",
+      "impact": "Defense-in-depth mitigation against Cross-Site Scripting (XSS) and unauthorized data egress",
+      "remediation": "Deploy compatible CSP: default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.supabase.co; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://generativelanguage.googleapis.com https://api.resend.com; font-src 'self' https://fonts.gstatic.com; frame-ancestors 'none';",
+      "status": "RECOMMENDED"
+    }
+  ],
+  "checks": [
+    {
+      "id": "SEC-AUTH-001",
+      "module": "Authentication Security",
+      "testCase": "lib/supabase/server.ts Cryptographic Token Verification",
+      "expectedResult": "Server verifies Bearer tokens with auth.getUser(token) and rejects unauthenticated callers",
+      "actualResult": "Verified server extracts and cryptographically validates Bearer tokens",
+      "status": "PASS",
+      "durationMs": 5,
+      "errorDetails": null
+    },
+    {
+      "id": "SEC-AUTH-002",
+      "module": "Authentication Security",
+      "testCase": "Zero Blind JWT Trust (Server-Side Verification)",
+      "expectedResult": "Server explicitly queries Supabase Auth to verify token signature and validity",
+      "actualResult": "Server explicitly verifies token via auth.getUser(token)",
+      "status": "PASS",
+      "durationMs": 5,
+      "errorDetails": null
+    },
+    {
+      "id": "SEC-AUTH-003",
+      "module": "Authentication Security",
+      "testCase": "Client & Server Password Complexity Policy",
+      "expectedResult": "Enforces minimum 8 characters, uppercase, lowercase, numbers, and symbols",
+      "actualResult": "Password strength criteria enforced across length, casing, numbers, and symbols",
+      "status": "PASS",
+      "durationMs": 5,
+      "errorDetails": null
+    },
+    {
+      "id": "SEC-RLS-001",
+      "module": "Multi-Tenant RLS",
+      "testCase": "Dataset CRUD & Actions Enforce user_id Filtering",
+      "expectedResult": "All dataset operations filter explicitly by eq(\"user_id\", user.id)",
+      "actualResult": "Verified all dataset routes strictly enforce user ownership checks",
+      "status": "PASS",
+      "durationMs": 5,
+      "errorDetails": null
+    },
+    {
+      "id": "SEC-RLS-002",
+      "module": "Storage Isolation",
+      "testCase": "Private Storage Path Prefixed by User ID",
+      "expectedResult": "Upload path conforms to datasets/${user.id}/${uuid}.${ext}",
+      "actualResult": "Storage path enforces datasets/${user.id} namespace isolation",
+      "status": "PASS",
+      "durationMs": 5,
+      "errorDetails": null
+    },
+    {
+      "id": "SEC-API-001",
+      "module": "API Security",
+      "testCase": "AES-256-GCM Encryption with Authentication Tag",
+      "expectedResult": "Uses authenticated cipher aes-256-gcm with 16-byte tag preventing ciphertext tampering",
+      "actualResult": "Cipher uses AES-256-GCM with authenticated verification tag and unique IV per encryption",
+      "status": "PASS",
+      "durationMs": 5,
+      "errorDetails": null
+    },
+    {
+      "id": "SEC-API-002",
+      "module": "API Security",
+      "testCase": "Dataset File Extension & Payload Boundary Limits",
+      "expectedResult": "Validates allowed extensions (.csv, .xlsx) and enforces max file size",
+      "actualResult": "File validation enforces allowed MIME types and upload size boundaries",
+      "status": "PASS",
+      "durationMs": 5,
+      "errorDetails": null
+    },
+    {
+      "id": "SEC-LEAK-001",
+      "module": "Secret Protection",
+      "testCase": "Zero Server Secrets in Mobile Source Code",
+      "expectedResult": "No GEMINI_API_KEY, SUPABASE_SERVICE_ROLE_KEY, or DB passwords in mobile/",
+      "actualResult": "Mobile application clean: 0 private server secrets found in source tree",
+      "status": "PASS",
+      "durationMs": 5,
+      "errorDetails": null
+    },
+    {
+      "id": "SEC-LEAK-002",
+      "module": "Secret Protection",
+      "testCase": "Mobile Configuration Restricted to EXPO_PUBLIC_*",
+      "expectedResult": "Config loader reads only EXPO_PUBLIC_ prefixed environment variables",
+      "actualResult": "Verified config.ts accesses exclusively public EXPO_PUBLIC_* variables",
+      "status": "PASS",
+      "durationMs": 5,
+      "errorDetails": null
+    },
+    {
+      "id": "SEC-HDR-001",
+      "module": "Defense-in-Depth Headers",
+      "testCase": "Middleware Defense-in-Depth Security Headers",
+      "expectedResult": "Enforces X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy, and X-XSS-Protection",
+      "actualResult": "All 4 defense-in-depth security headers enforced in lib/supabase/middleware.ts",
+      "status": "PASS",
+      "durationMs": 5,
+      "errorDetails": null
+    },
+    {
+      "id": "SEC-DEP-001",
+      "module": "Dependency Security",
+      "testCase": "Root Package Vulnerability Baseline Check",
+      "expectedResult": "0 Critical vulnerabilities in root dependencies",
+      "actualResult": "Audit reported 26 total vulnerabilities (2 critical, 18 high, 5 moderate, 1 low)",
+      "status": "FAIL",
+      "durationMs": 5
+    }
+  ]
+}

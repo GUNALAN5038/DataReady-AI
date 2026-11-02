@@ -11,6 +11,7 @@ import { detectDuplicates } from '@/lib/analysis/duplicates'
 import { detectOutliers } from '@/lib/analysis/outliers'
 import { calculateMLReadiness } from '@/lib/analysis/ml-readiness'
 import { generateRecommendations } from '@/lib/analysis/recommendations'
+import { createNotification } from '@/lib/notifications'
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -204,6 +205,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       ml_readiness_score: mlReadiness.overallScore
     })
 
+    // Dispatch in-app notification
+    await createNotification({
+      userId: user.id,
+      title: 'Transformation Applied',
+      message: `Applied ${transformations.length} transformation(s) to dataset "${dataset.name}". New version: V${newVersion}.`,
+      type: 'transformation_success',
+    }).catch(() => {})
+
     return NextResponse.json({
       success: true,
       rowsBefore,
@@ -216,7 +225,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         name: updatedDataset.name,
         current_version: updatedDataset.current_version,
         row_count: updatedDataset.row_count,
-        column_count: updatedDataset.column_count
+        column_count: updatedDataset.column_count,
+        column_metadata: updatedDataset.column_metadata,
+        sample_data: updatedDataset.sample_data,
       }
     })
 

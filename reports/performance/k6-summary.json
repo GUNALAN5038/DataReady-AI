@@ -1,0 +1,248 @@
+{
+  "summary": {
+    "total": 9629,
+    "passed": 9629,
+    "failed": 0,
+    "blocked": 0,
+    "passRate": 100,
+    "durationMs": 45000,
+    "environment": "Local Next.js Production Server (http://localhost:3000)",
+    "framework": "k6 v2.3.0 (Grafana Labs)"
+  },
+  "metrics": {
+    "vus": 100,
+    "duration": "45s",
+    "totalRequests": 9629,
+    "rps": 210.68,
+    "avgDurationMs": 305.92,
+    "minDurationMs": 8.53,
+    "medDurationMs": 280.22,
+    "maxDurationMs": 5014.5,
+    "p90DurationMs": 394.52,
+    "p95DurationMs": 431.52,
+    "p99DurationMs": 0,
+    "failedRequests": 0,
+    "failureRate": 0,
+    "endpointsTested": [
+      {
+        "name": "Public Login",
+        "path": "/login",
+        "method": "GET",
+        "expectedStatus": "200 OK",
+        "type": "Public SSR Page"
+      },
+      {
+        "name": "Public Landing",
+        "path": "/",
+        "method": "GET",
+        "expectedStatus": "200 OK",
+        "type": "Public Portal Page"
+      },
+      {
+        "name": "User Profile API",
+        "path": "/api/user/profile",
+        "method": "GET",
+        "expectedStatus": "401 Unauthorized (Auth Gate)",
+        "type": "Protected API Route"
+      },
+      {
+        "name": "Chat Conversations API",
+        "path": "/api/chat/conversations",
+        "method": "GET",
+        "expectedStatus": "401 Unauthorized (Auth Gate)",
+        "type": "Protected API Route"
+      },
+      {
+        "name": "User Keys API",
+        "path": "/api/user/keys",
+        "method": "GET",
+        "expectedStatus": "401 Unauthorized (Auth Gate)",
+        "type": "Protected API Route"
+      }
+    ]
+  },
+  "baseline": {
+    "totalRequests": 3418,
+    "rps": 56.45,
+    "avgDurationMs": 23.36,
+    "medDurationMs": 18.24,
+    "p95DurationMs": 44.97,
+    "p99DurationMs": 98.4,
+    "failureRate": 0
+  },
+  "rawSummary": {
+    "root_group": {
+      "id": "d41d8cd98f00b204e9800998ecf8427e",
+      "groups": {},
+      "checks": {
+        "chat conversations returns valid auth gate (401 or 200)": {
+          "name": "chat conversations returns valid auth gate (401 or 200)",
+          "path": "::chat conversations returns valid auth gate (401 or 200)",
+          "id": "69213fbbabccbcef631d06e619c5f817",
+          "passes": 1041,
+          "fails": 0
+        },
+        "login status is 200": {
+          "name": "login status is 200",
+          "path": "::login status is 200",
+          "id": "baba87e761865dc93085ee0c1fe25f4c",
+          "passes": 1520,
+          "fails": 0
+        },
+        "login has content": {
+          "name": "login has content",
+          "path": "::login has content",
+          "id": "04c0aa2085a1eb288c77e114a40671ba",
+          "passes": 1520,
+          "fails": 0
+        },
+        "user profile returns valid auth gate (401 or 200)": {
+          "passes": 1031,
+          "fails": 0,
+          "name": "user profile returns valid auth gate (401 or 200)",
+          "path": "::user profile returns valid auth gate (401 or 200)",
+          "id": "214f5c68211b8dca6725c79e3627ed63"
+        },
+        "user keys returns valid auth gate (401 or 200)": {
+          "name": "user keys returns valid auth gate (401 or 200)",
+          "path": "::user keys returns valid auth gate (401 or 200)",
+          "id": "cd0f0ef4855e5e73a1c248f58ba27ec7",
+          "passes": 1030,
+          "fails": 0
+        },
+        "home status is 200": {
+          "name": "home status is 200",
+          "path": "::home status is 200",
+          "id": "a086f36bb89bcf695fb030c3200a418e",
+          "passes": 635,
+          "fails": 0
+        },
+        "home has content": {
+          "id": "2ee19c4595fb370abf76ed69bd8b53a7",
+          "passes": 635,
+          "fails": 0,
+          "name": "home has content",
+          "path": "::home has content"
+        }
+      },
+      "name": "",
+      "path": ""
+    },
+    "metrics": {
+      "http_req_receiving": {
+        "avg": 0.40961555717104553,
+        "min": 0,
+        "med": 0.425,
+        "max": 9.0828,
+        "p(90)": 0.93732,
+        "p(95)": 0.99746
+      },
+      "vus_max": {
+        "value": 100,
+        "min": 100,
+        "max": 100
+      },
+      "http_req_blocked": {
+        "min": 0,
+        "med": 0,
+        "max": 111.5811,
+        "p(90)": 0,
+        "p(95)": 1.1178800000000002,
+        "avg": 1.1138540866133546
+      },
+      "http_req_tls_handshaking": {
+        "avg": 0,
+        "min": 0,
+        "med": 0,
+        "max": 0,
+        "p(90)": 0,
+        "p(95)": 0
+      },
+      "checks": {
+        "passes": 7412,
+        "fails": 0,
+        "value": 1
+      },
+      "iteration_duration": {
+        "avg": 862.960826954535,
+        "min": 471.3145,
+        "med": 827.5682,
+        "max": 6406.3051,
+        "p(90)": 1166.3324800000003,
+        "p(95)": 1315.03908
+      },
+      "http_req_waiting": {
+        "avg": 305.4916951292972,
+        "min": 8.5301,
+        "med": 279.7221,
+        "max": 5013.9192,
+        "p(90)": 394.04634000000004,
+        "p(95)": 431.00588000000005
+      },
+      "data_received": {
+        "count": 70109598,
+        "rate": 1534001.5661302765
+      },
+      "vus": {
+        "value": 100,
+        "min": 100,
+        "max": 100
+      },
+      "http_req_failed": {
+        "passes": 0,
+        "fails": 9629,
+        "thresholds": {
+          "rate<0.05": false
+        },
+        "value": 0
+      },
+      "http_reqs": {
+        "count": 9629,
+        "rate": 210.68300919752005
+      },
+      "http_req_connecting": {
+        "p(95)": 0.7172000000000002,
+        "avg": 0.1439488420396719,
+        "min": 0,
+        "med": 0,
+        "max": 16.5077,
+        "p(90)": 0
+      },
+      "data_sent": {
+        "count": 1122901,
+        "rate": 24569.130928539253
+      },
+      "http_req_duration": {
+        "avg": 305.91802036556277,
+        "min": 8.5301,
+        "med": 280.2215,
+        "max": 5014.5045,
+        "p(90)": 394.5217800000001,
+        "p(95)": 431.524,
+        "thresholds": {
+          "p(95)<1000": false
+        }
+      },
+      "http_req_duration{expected_response:true}": {
+        "avg": 305.91802036556277,
+        "min": 8.5301,
+        "med": 280.2215,
+        "max": 5014.5045,
+        "p(90)": 394.5217800000001,
+        "p(95)": 431.524
+      },
+      "http_req_sending": {
+        "p(95)": 0,
+        "avg": 0.016709679094402335,
+        "min": 0,
+        "med": 0,
+        "max": 3.305,
+        "p(90)": 0
+      },
+      "iterations": {
+        "count": 5257,
+        "rate": 115.02342707979675
+      }
+    }
+  }
+}

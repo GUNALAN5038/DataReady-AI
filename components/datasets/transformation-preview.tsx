@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { TransformationPreviewResult } from '@/types/transformations'
 import { Loader2, ArrowRight, CheckCircle2, AlertTriangle, Wand2 } from 'lucide-react'
+import { DatasetPreviewTable } from './dataset-preview-table'
 
 interface TransformationPreviewDialogProps {
   isOpen: boolean
@@ -39,7 +40,7 @@ export function TransformationPreviewDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !isApplying && !open && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border-border/80 bg-card/95 backdrop-blur-xs">
+      <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto rounded-2xl border-border/80 bg-card/95 backdrop-blur-xs p-5 sm:p-6">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl text-foreground">
             <div className="h-8 w-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-xs shadow-indigo-500/20">
@@ -54,14 +55,14 @@ export function TransformationPreviewDialog({
 
         <div className="space-y-5 my-2">
           {/* Version Notice */}
-          <div className="p-3.5 bg-gradient-to-r from-blue-50/60 via-indigo-50/40 to-teal-50/30 dark:from-indigo-950/30 dark:to-teal-950/20 border border-indigo-200/70 dark:border-indigo-900/50 rounded-xl flex items-center justify-between text-xs">
+          <div className="p-3.5 bg-gradient-to-r from-blue-50/60 via-indigo-50/40 to-teal-50/30 dark:from-indigo-950/30 dark:to-teal-950/20 border border-indigo-200/70 dark:border-indigo-900/50 rounded-xl flex items-center justify-between text-xs flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <span className="text-foreground font-semibold">Resulting Dataset Version:</span>
               <Badge className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-mono font-bold text-xs shadow-xs shadow-indigo-500/20">
                 Version {targetVersion}
               </Badge>
             </div>
-            <span className="text-[11px] text-muted-foreground">Original dataset remains recoverable</span>
+            <span className="text-[11px] text-muted-foreground">Original dataset remains recoverable via rollback</span>
           </div>
 
           {/* Before vs After Metric Cards */}
@@ -137,42 +138,24 @@ export function TransformationPreviewDialog({
             </div>
           </div>
 
-          {/* Sample Data Table Preview */}
+          {/* Full-featured Transformed Data Output Table Preview */}
           {previewData.samplePreview && previewData.samplePreview.length > 0 && (
             <div className="space-y-2">
-              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Sample Output (First {previewData.samplePreview.length} rows)
+              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
+                <span>Transformed Output Preview</span>
+                <span className="text-[11px] normal-case text-muted-foreground">
+                  Showing {previewData.samplePreview.length} of {previewData.rowsAfter.toLocaleString()} rows • {previewData.columns.length} columns
+                </span>
               </div>
-              <div className="border border-border/80 rounded-xl overflow-x-auto max-h-48 bg-muted/20">
-                <table className="w-full text-xs text-left text-muted-foreground border-collapse">
-                  <thead className="bg-muted/70 text-foreground sticky top-0 backdrop-blur-xs">
-                    <tr>
-                      {previewData.columns.slice(0, 8).map((col) => (
-                        <th key={col} className="px-3 py-2 border-b border-border/70 font-semibold whitespace-nowrap text-xs">{col}</th>
-                      ))}
-                      {previewData.columns.length > 8 && (
-                        <th className="px-3 py-2 border-b border-border/70 text-muted-foreground font-medium">+{previewData.columns.length - 8} more</th>
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border/40 font-mono">
-                    {previewData.samplePreview.slice(0, 5).map((row, i) => (
-                      <tr key={i} className="hover:bg-muted/40 transition-colors">
-                        {previewData.columns.slice(0, 8).map((col) => (
-                          <td key={col} className="px-3 py-1.5 whitespace-nowrap max-w-[150px] truncate text-xs">
-                            {row[col] === null || row[col] === undefined ? (
-                              <span className="text-rose-500 italic">null</span>
-                            ) : (
-                              String(row[col])
-                            )}
-                          </td>
-                        ))}
-                        {previewData.columns.length > 8 && <td className="px-3 py-1.5 text-muted-foreground">...</td>}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <DatasetPreviewTable
+                columns={previewData.columns}
+                data={previewData.samplePreview}
+                totalRows={previewData.rowsAfter}
+                totalColumns={previewData.columnsAfter}
+                maxHeight="280px"
+                compact
+                caption={`Previewing transformation result (Target: v${targetVersion})`}
+              />
             </div>
           )}
 

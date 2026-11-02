@@ -1,35 +1,41 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getAuthenticatedUser } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { PlusCircle, Database, TrendingUp, Clock } from 'lucide-react'
+import { PlusCircle, Database, TrendingUp, Clock, AlertCircle } from 'lucide-react'
 
 export default async function DashboardPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getAuthenticatedUser()
 
   if (!user) {
     return null
   }
 
-  const { data: datasets } = await supabase
-    .from('datasets')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
+  const supabase = await createClient()
 
-  const totalDatasets = datasets?.length || 0
-  const recentDatasets = datasets?.slice(0, 5) || []
+  // Execute datasets and analyses queries in parallel with bounded columns and limits
+  const [datasetsResult, analysesResult] = await Promise.all([
+    supabase
+      .from('datasets')
+      .select('id, name, file_type, row_count, status, created_at', { count: 'exact' })
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(5),
+    supabase
+      .from('analyses')
+      .select('ml_readiness_score')
+      .eq('user_id', user.id)
+      .in('analysis_type', ['full_analysis', 'ml_readiness'])
+      .not('ml_readiness_score', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(50)
+  ])
 
-  // Calculate Average ML Readiness
-  // In a real app, this should join with analyses table. For simplicity, if we have it in datasets or fetch separately.
-  // We'll fetch analyses to get scores.
-  const { data: analyses } = await supabase
-    .from('analyses')
-    .select('ml_readiness_score')
-    .eq('user_id', user.id)
-    .eq('analysis_type', 'ml_readiness')
-    .not('ml_readiness_score', 'is', null)
+  const { data, count: totalDatasetsCount, error: datasetsError } = datasetsResult
+  const { data: analyses, error: analysesError } = analysesResult
+
+  const totalDatasets = totalDatasetsCount ?? 0
+  const recentDatasets = data || []
 
   const avgMLReadiness = analyses?.length
     ? Math.round(analyses.reduce((acc, a) => acc + (a.ml_readiness_score || 0), 0) / analyses.length)
@@ -51,6 +57,19 @@ export default async function DashboardPage() {
           </Button>
         </Link>
       </div>
+ 
+      {(datasetsError || analysesError) && (
+        <div className="p-4 rounded-xl border border-destructive/30 bg-destructive/10 text-destructive text-xs flex items-center gap-2" role="alert">
+          <AlertCircle className="h-4 w-4 shrink-0" />
+          <span>
+            {datasetsError && analysesError
+              ? 'Could not load dataset metrics or ML readiness scores. Please refresh the page.'
+              : datasetsError
+              ? 'Could not load the latest dataset metrics. Please refresh the page.'
+              : 'Could not load ML readiness metrics. Please refresh the page.'}
+          </span>
+        </div>
+      )}
 
       <div className="grid gap-5 md:grid-cols-3">
         <Card className="card-hover-lift border-border/70 relative overflow-hidden bg-card/90">
@@ -77,10 +96,25 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent className="space-y-1">
             <div className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 bg-clip-text text-transparent">
-              {avgMLReadiness > 0 ? `${avgMLReadiness}/100` : '—'}
+              {analysesError ? (
+                <span className="text-destructive text-xl flex items-center gap-1.5 font-semibold" role="alert" aria-label="Error loading readiness metric">
+                  <AlertCircle className="h-5 w-5 shrink-0 inline text-destructive" />
+                  Unavailable
+                </span>
+              ) : avgMLReadiness > 0 ? (
+                `${avgMLReadiness}/100`
+              ) : (
+                '—'
+              )}
             </div>
             <p className="text-xs text-muted-foreground">
-              {avgMLReadiness >= 80 ? 'Production ready quality' : avgMLReadiness > 0 ? 'Cleaning recommended' : 'Pending dataset analysis'}
+              {analysesError
+                ? 'Could not load readiness metrics'
+                : avgMLReadiness >= 80
+                ? 'Production ready quality'
+                : avgMLReadiness > 0
+                ? 'Cleaning recommended'
+                : 'Pending dataset analysis'}
             </p>
           </CardContent>
         </Card>

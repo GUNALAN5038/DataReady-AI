@@ -1,0 +1,14 @@
+{
+  "name": "dataready-ai-web-selenium",
+  "version": "1.0.0",
+  "description": "Selenium Web E2E automation for DataReady AI",
+  "private": true,
+  "main": "tests/run-all-tests.js",
+  "scripts": {
+    "test": "node tests/run-all-tests.js"
+  },
+  "dependencies": {
+    "selenium-webdriver": "^4.27.0",
+    "exceljs": "^4.4.0"
+  }
+}

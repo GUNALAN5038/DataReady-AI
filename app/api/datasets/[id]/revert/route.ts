@@ -9,6 +9,7 @@ import { detectDuplicates } from '@/lib/analysis/duplicates'
 import { detectOutliers } from '@/lib/analysis/outliers'
 import { calculateMLReadiness } from '@/lib/analysis/ml-readiness'
 import { generateRecommendations } from '@/lib/analysis/recommendations'
+import { createNotification } from '@/lib/notifications'
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -224,6 +225,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       affected_columns: affectedCols,
       status: 'completed'
     })
+
+    // Dispatch in-app notification
+    await createNotification({
+      userId: user.id,
+      title: 'Rollback Completed',
+      message: `Dataset "${dataset.name}" was successfully reverted to Version ${targetVersion} (restored as forward Version ${newVersion}).`,
+      type: 'warning',
+    }).catch(() => {})
 
     return NextResponse.json({
       success: true,

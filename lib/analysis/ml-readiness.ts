@@ -24,7 +24,7 @@ export function calculateMLReadiness(
   colCount: number
 ): MLReadinessScore {
   
-  if (totalRows === 0 || colCount === 0) {
+  if (!totalRows || totalRows <= 0 || !colCount || colCount <= 0) {
     return {
       overallScore: 0,
       category: 'Poor',
@@ -76,13 +76,14 @@ export function calculateMLReadiness(
   else if (rowToColRatio < 100) featureQuality = 80;
 
   // Calculate overall weighted score
-  const overallScore = Math.round(
+  const rawScore = Math.round(
     (completeness * 0.25) +
     (consistency * 0.20) +
     (validity * 0.20) +
     (uniqueness * 0.15) +
     (featureQuality * 0.20)
   );
+  const overallScore = Math.min(100, Math.max(0, rawScore));
 
   let category: MLReadinessScore['category'] = 'Poor';
   if (overallScore >= 90) category = 'Excellent';

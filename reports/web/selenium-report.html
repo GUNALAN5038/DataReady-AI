@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DataReady AI — Selenium Web E2E Test Results</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #3b82f6;
+      --success: #10b981;
+      --success-bg: rgba(16, 185, 129, 0.15);
+      --danger: #ef4444;
+      --danger-bg: rgba(239, 68, 68, 0.15);
+      --warning: #f59e0b;
+      --warning-bg: rgba(245, 158, 11, 0.15);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: var(--bg); color: var(--text-main); padding: 2rem; min-height: 100vh; }
+    .container { max-width: 1400px; margin: 0 auto; }
+    header {
+      background: linear-gradient(135deg, #1e3a8a 0%, #312e81 100%);
+      padding: 2rem;
+      border-radius: 1rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .header-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+    h1 { font-size: 1.8rem; font-weight: 700; color: #ffffff; letter-spacing: -0.025em; }
+    .badge-category { background: rgba(59, 130, 246, 0.3); border: 1px solid #60a5fa; color: #93c5fd; padding: 0.3rem 0.8rem; border-radius: 9999px; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; }
+    .meta-bar { margin-top: 1rem; font-size: 0.9rem; color: #cbd5e1; display: flex; gap: 2rem; flex-wrap: wrap; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .kpi-card { background: var(--card-bg); border: 1px solid var(--card-border); padding: 1.5rem; border-radius: 0.75rem; }
+    .kpi-label { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+    .kpi-val { font-size: 2rem; font-weight: 700; color: var(--text-main); }
+    .kpi-val.pass { color: var(--success); }
+    .kpi-val.fail { color: var(--danger); }
+    .kpi-val.warn { color: var(--warning); }
+    .filter-bar { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .filter-btn { background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-muted); padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: all 0.2s; }
+    .filter-btn.active, .filter-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .table-container { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 0.75rem; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2); margin-bottom: 2rem; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
+    th { background: #0f172a; padding: 1rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; border-bottom: 1px solid var(--card-border); }
+    td { padding: 1rem; border-bottom: 1px solid rgba(51, 65, 85, 0.5); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover { background: rgba(255, 255, 255, 0.02); }
+    .status-badge { display: inline-block; padding: 0.25rem 0.65rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+    .status-pass { background: var(--success-bg); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .status-fail { background: var(--danger-bg); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .status-blocked { background: var(--warning-bg); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .status-skipped { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3); }
+    .code-box { background: #0b0f19; padding: 0.5rem; border-radius: 0.375rem; font-family: monospace; font-size: 0.8rem; color: #fca5a5; max-height: 150px; overflow-y: auto; white-space: pre-wrap; margin-top: 0.5rem; border: 1px solid #7f1d1d; }
+    .thumb-link { display: inline-block; color: #60a5fa; text-decoration: underline; font-size: 0.8rem; margin-top: 0.3rem; }
+    footer { text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 2rem 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="header-top">
+        <h1>DataReady AI — Selenium Web E2E Test Results</h1>
+        <span class="badge-category">Web Automation</span>
+      </div>
+      <div class="meta-bar">
+        <span><strong>Environment:</strong> Local Chrome Headless (Next.js 16.3.2 Turbopack)</span>
+        <span><strong>Executed At:</strong> 30/10/2026, 3:29:32 pm</span>
+        <span><strong>Framework:</strong> Selenium WebDriver 4.27</span>
+        <span><strong>Total Duration:</strong> 13.54s</span>
+      </div>
+    </header>
+
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Total Tests</div>
+        <div class="kpi-val">27</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Passed</div>
+        <div class="kpi-val pass">11</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Failed</div>
+        <div class="kpi-val fail">0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Blocked</div>
+        <div class="kpi-val warn">15</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Skipped</div>
+        <div class="kpi-val" style="color: #94a3b8;">1</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Pass Rate</div>
+        <div class="kpi-val fail">42%</div>
+      </div>
+    </div>
+
+    
+
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="filterTable('all')">All Tests (27)</button>
+      <button class="filter-btn" onclick="filterTable('PASS')">Passed (11)</button>
+      <button class="filter-btn" onclick="filterTable('FAIL')">Failed (0)</button>
+      <button class="filter-btn" onclick="filterTable('BLOCKED')">Blocked (15)</button>
+      <button class="filter-btn" onclick="filterTable('SKIPPED')">Skipped (1)</button>
+    </div>
+
+    <div class="table-container">
+      <table id="test-table">
+        <thead>
+          <tr>
+            <th>Test ID</th>
+            <th>Module</th>
+            <th>Test Case</th>
+            <th>Expected Result</th>
+            <th>Actual Result</th>
+            <th>Status</th>
+            <th>Duration</th>
+            <th>Details / Evidence</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+            <tr data-status="PASS">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">WEB-AUTH-001</td>
+              <td><strong>Authentication</strong></td>
+              <td>Sign In Page Loads Form Controls</td>
+              <td style="color: var(--text-muted);">Login page loads with email, password, submit button and reset link</td>
+              <td>Page loaded with title "DataReady AI" and all core form elements</td>
+              <td><span class="status-badge status-pass">PASS</span></td>
+              <td style="font-family: monospace;">684ms</td>
+              <td>
+                
+                
+                
+              </td>
+            </tr>
+            <tr data-status="PASS">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">WEB-AUTH-002</td>
+              <td><strong>Authentication</strong></td>
+              <td>Invalid Credentials Rejected with Error Alert</td>
+              <td style="color: var(--text-muted);">Error banner is displayed rejecting invalid credentials</td>
+              <td>Invalid login was rejected and handled safely</td>
+              <td><span class="status-badge status-pass">PASS</span></td>
+              <td style="font-family: monospace;">2704ms</td>
+              <td>
+                
+                
+                
+              </td>
+            </tr>
+            <tr data-status="PASS">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">WEB-AUTH-003</td>
+              <td><strong>Authentication</strong></td>
+              <td>Sign Up Page Rendering & Links</td>
+              <td style="color: var(--text-muted);">Registration page loads with required input fields</td>
+              <td>Signup form rendered with email and password inputs</td>
+              <td><span class="status-badge status-pass">PASS</span></td>
+              <td style="font-family: monospace;">183ms</td>
+              <td>
+                
+                
+                
+              </td>
+            </tr>
+            <tr data-status="PASS">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">WEB-AUTH-004</td>
+              <td><strong>Authentication</strong></td>
+              <td>Forgot Password Request Flow</td>
+              <td style="color: var(--text-muted);">Password recovery form loads and accepts submission</td>
+              <td>Forgot password interface active and ready</td>
+              <td><span class="status-badge status-pass">PASS</span></td>
+              <td style="font-family: monospace;">158ms</td>
+              <td>
+                
+                
+                
+              </td>
+            </tr>
+            <tr data-status="PASS">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">WEB-AUTH-005</td>
+              <td><strong>Authentication</strong></td>
+              <td>Protected Route Guard: /dashboard</td>
+              <td style="color: var(--text-muted);">Unauthenticated request to /dashboard redirects to /login</td>
+              <td>Protected route enforced; redirected to http://localhost:3000/login</td>
+              <td><span class="status-badge status-pass">PASS</span></td>
+              <td style="font-family: monospace;">148ms</td>
+              <td>
+                
+                
+                
+              </td>
+            </tr>
+            <tr data-status="PASS">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">WEB-AUTH-006</td>
+              <td><strong>Authentication</strong></td>
+              <td>Protected Route Guard: /datasets</td>
+              <td style="color: var(--text-muted);">Unauthenticated request to /datasets redirects to /login</td>
+              <td>Protected route enforced; redirected to http://localhost:3000/login</td>
+              <td><span class="status-badge status-pass">PASS</span></td>
+              <td style="font-family: monospace;">161ms</td>
+              <td>
+                
+                
+                
+              </td>
+            </tr>
+            <tr data-status="PASS">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">WEB-AUTH-007</td>
+              <td><strong>Authentication</strong></td>
+              <td>Protected Route Guard: /chat</td>
+              <td style="color: var(--text-muted);">Unauthenticated request to /chat redirects to /login</td>
+              <td>Protected route enforced; redirected to http://localhost:3000/login</td>
+              <td><span class="status-badge status-pass">PASS</span></td>
+              <td style="font-family: monospace;">155ms</td>
+              <td>
+                
+                
+                
+              </td>
+            </tr>
+            <tr data-status="PASS">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">WEB-AUTH-008</td>
+              <td><strong>Authentication</strong></td>
+              <td>Protected Route Guard: /upload</td>
+              <td style="color: var(--text-muted);">Unauthenticated request to /upload redirects to /login</td>
+              <td>Protected route enforced; redirected to http://localhost:3000/login</td>
+              <td><span class="status-badge status-pass">PASS</span></td>
+              <td style="font-family: monospace;">174ms</td>
+              <td>
+                
+                
+                
+              </td>
+            </tr>
+            <tr data-status="PASS">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">WEB-AUTH-009</td>
+              <td><strong>Authentication</strong></td>
+              <td>User Logout & Session Invalidation Flow</td>
+              <td style="color: var(--text-muted);">User logout triggers session clearance and redirects to /login</td>
+              <td>Logout / unauthenticated landing state verified at /login</td>
+              <td><span class="status-badge status-pass">PASS</span></td>
+              <td style="font-family: monospace;">109ms</td>
+              <td>
+                
+                
+                
+              </td>
+            </tr>
+            <tr data-status="PASS">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">WEB-DASH-001</td>
+              <td><strong>Dashboard</strong></td>
+              <td>Theme Toggle Component Functionality</td>
+              <td style="color: var(--text-muted);">Theme toggle exists on landing/login pages without hydration errors</td>
+              <td>Theme switcher active and verified</td>
+              <td><span class="status-badge status-pass">PASS</span></td>
+              <td style="font-family: monospace;">139ms</td>
+              <td>
+                
+                
+                
+              </td>
+            </tr>
+            <tr data-status="BLOCKED">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">WEB-DATA-001</td>
+              <td><strong>Dataset Management</strong></td>
+              <td>Dataset Upload UI & File Dropzone</td>
+              <td style="color: var(--text-muted);">Upload view presents file dropzone with accepted MIME types and size limit indicators</td>
+              <td>BLOCKED: Requires active authenticated Supabase session. Hosted Supabase instance mandates email confirmation for newly registered accounts, preventing autonomous login in headless runner.</td>
+              <td><span class="status-badge status-blocked">BLOCKED</span></td>
+              <td style="font-family: monospace;">0ms</td>
+              <td>
+                <div class="code-box">Precondition: Live user session required to render /upload beyond login redirect.</div>
+                
+                
+              </td>
+            </tr>
+            <tr data-status="BLOCKED">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">WEB-DATA-002</td>
+              <td><strong>Dataset Management</strong></td>
+              <td>Dataset List & Repository View</td>
+              <td style="color: var(--text-muted);">Datasets view displays user dataset catalog, status tags, row counts, and pagination controls</td>
+              <td>BLOCKED: Requires active authenticated Supabase session. Hosted Supabase instance mandates email confirmation for newly registered accounts.</td>
+              <td><span class="status-badge status-blocked">BLOCKED</span></td>
+              <td style="font-family: monospace;">0ms</td>
+              <td>
+                <div class="code-box">Precondition: Live user session required to query user-owned datasets.</div>
+                
+                
+              </td>
+            </tr>
+            <tr data-status="BLOCKED">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">WEB-DATA-003</td>
+              <td><strong>Dataset Management</strong></td>
+              <td>Dataset Tabular Preview Component</td>
+              <td style="color: var(--text-muted);">DatasetPreviewTable renders column headers, sample rows, and scrollable container</td>
+              <td>BLOCKED: Requires active authenticated Supabase session with uploaded test dataset.</td>
+              <td><span class="status-badge status-blocked">BLOCKED</span></td>
+              <td style="font-family: monospace;">0ms</td>
+              <td>
+                <div class="code-box">Precondition: Live user session and dataset record required.</div>
+                
+                
+              </td>
+            </tr>
+            <tr data-status="BLOCKED">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">WEB-ANALYSIS-001</td>
+              <td><strong>Analysis</strong></td>
+              <td>Automated Dataset Analysis Pipeline</td>
+              <td style="color: var(--text-muted);">Analysis triggers and computes column statistics, types, and quality metrics</td>
+              <td>BLOCKED: Requires active authenticated Supabase session with dataset uploaded in storage.</td>
+              <td><span class="status-badge status-blocked">BLOCKED</span></td>
+              <td style="font-family: monospace;">0ms</td>
+              <td>
+                <div class="code-box">Precondition: Live user session required to trigger /api/datasets/[id]/analyze.</div>
+                
+                
+              </td>
+            </tr>
+            <tr data-status="BLOCKED">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">WEB-ANALYSIS-002</td>
+              <td><strong>Analysis</strong></td>
+              <td>Missing-Value Detection & Imputation Display</td>
+              <td style="color: var(--text-muted);">Quality tab reports missing value counts, percentages, and handles empty-string/null values</td>
+              <td>BLOCKED: Requires active authenticated Supabase session with completed dataset analysis.</td>
+              <td><span class="status-badge status-blocked">BLOCKED</span></td>
+              <td style="font-family: monospace;">1ms</td>
+              <td>
+                <div class="code-box">Precondition: Live user session and completed analysis record required.</div>
+                
+                
+              </td>
+            </tr>
+            <tr data-status="BLOCKED">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">WEB-ANALYSIS-003</td>
+              <td><strong>Analysis</strong></td>
+              <td>Duplicate Row Detection & Identification</td>
+              <td style="color: var(--text-muted);">Quality tab identifies duplicate rows and displays exact duplicate count</td>
+              <td>BLOCKED: Requires active authenticated Supabase session with completed dataset analysis.</td>
+              <td><span class="status-badge status-blocked">BLOCKED</span></td>
+              <td style="font-family: monospace;">0ms</td>
+              <td>
+                <div class="code-box">Precondition: Live user session and completed analysis record required.</div>
+                
+                
+              </td>
+            </tr>
+            <tr data-status="BLOCKED">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">WEB-ANALYSIS-004</td>
+              <td><strong>Analysis</strong></td>
+              <td>Outlier Detection via IQR Bounds Calculation</td>
+              <td style="color: var(--text-muted);">Quality tab applies Q1 - 1.5*IQR and Q3 + 1.5*IQR bounds and flags outlier values</td>
+              <td>BLOCKED: Requires active authenticated Supabase session with completed dataset analysis.</td>
+              <td><span class="status-badge status-blocked">BLOCKED</span></td>
+              <td style="font-family: monospace;">0ms</td>
+              <td>
+                <div class="code-box">Precondition: Live user session and completed analysis record required.</div>
+                
+                
+              </td>
+            </tr>
+            <tr data-status="BLOCKED">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">WEB-ANALYSIS-005</td>
+              <td><strong>Analysis</strong></td>
+              <td>ML Readiness Score Composite Gauge</td>
+              <td style="color: var(--text-muted);">ML Readiness tab displays overall composite score [0-100] and 5-factor breakdown</td>
+              <td>BLOCKED: Requires active authenticated Supabase session with completed dataset analysis.</td>
+              <td><span class="status-badge status-blocked">BLOCKED</span></td>
+              <td style="font-family: monospace;">0ms</td>
+              <td>
+                <div class="code-box">Precondition: Live user session and completed analysis record required.</div>
+                
+                
+              </td>
+            </tr>
+            <tr data-status="SKIPPED">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">WEB-AI-001</td>
+              <td><strong>AI Insights</strong></td>
+              <td>AI Insights Generation (Provider Key Check)</td>
+              <td style="color: var(--text-muted);">AI Insights tab requests model synthesis using GEMINI_API_KEY when configured</td>
+              <td>SKIPPED: External Gemini API key (GEMINI_API_KEY / GOOGLE_GENERATIVE_AI_API_KEY) is not configured in environment. Test skipped per specification without failure.</td>
+              <td><span class="status-badge status-skipped">SKIPPED</span></td>
+              <td style="font-family: monospace;">0ms</td>
+              <td>
+                <div class="code-box">External service key unavailable in local environment.</div>
+                
+                
+              </td>
+            </tr>
+            <tr data-status="BLOCKED">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">WEB-TRANS-001</td>
+              <td><strong>Transformations</strong></td>
+              <td>Dataset Transformation Configuration & Execution</td>
+              <td style="color: var(--text-muted);">Transform tab enables imputation, duplicate removal, log transform, and creates new version</td>
+              <td>BLOCKED: Requires active authenticated Supabase session and target dataset.</td>
+              <td><span class="status-badge status-blocked">BLOCKED</span></td>
+              <td style="font-family: monospace;">0ms</td>
+              <td>
+                <div class="code-box">Precondition: Live user session required to invoke /api/datasets/[id]/transform.</div>
+                
+                
+              </td>
+            </tr>
+            <tr data-status="BLOCKED">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">WEB-TRANS-002</td>
+              <td><strong>Transformations</strong></td>
+              <td>Transformation History Audit Timeline</td>
+              <td style="color: var(--text-muted);">History tab displays ordered audit log of operations, affected rows, and previous/new versions</td>
+              <td>BLOCKED: Requires active authenticated Supabase session with transformation history records.</td>
+              <td><span class="status-badge status-blocked">BLOCKED</span></td>
+              <td style="font-family: monospace;">0ms</td>
+              <td>
+                <div class="code-box">Precondition: Live user session required.</div>
+                
+                
+              </td>
+            </tr>
+            <tr data-status="BLOCKED">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">WEB-TRANS-003</td>
+              <td><strong>Transformations</strong></td>
+              <td>Before-and-After Comparison View</td>
+              <td style="color: var(--text-muted);">Compare tab presents side-by-side delta metrics for row counts, missing values, and readiness score</td>
+              <td>BLOCKED: Requires active authenticated Supabase session and multi-version dataset.</td>
+              <td><span class="status-badge status-blocked">BLOCKED</span></td>
+              <td style="font-family: monospace;">1ms</td>
+              <td>
+                <div class="code-box">Precondition: Live user session required.</div>
+                
+                
+              </td>
+            </tr>
+            <tr data-status="BLOCKED">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">WEB-TRANS-004</td>
+              <td><strong>Transformations</strong></td>
+              <td>Dataset Version Reversion & Rollback Execution</td>
+              <td style="color: var(--text-muted);">Rollback action restores previous version and updates current_version pointer in database</td>
+              <td>BLOCKED: Requires active authenticated Supabase session and historical dataset version.</td>
+              <td><span class="status-badge status-blocked">BLOCKED</span></td>
+              <td style="font-family: monospace;">0ms</td>
+              <td>
+                <div class="code-box">Precondition: Live user session required to invoke /api/datasets/[id]/revert.</div>
+                
+                
+              </td>
+            </tr>
+            <tr data-status="BLOCKED">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">WEB-EXPORT-001</td>
+              <td><strong>Export</strong></td>
+              <td>CSV Dataset Export with UTF-8 BOM</td>
+              <td style="color: var(--text-muted);">Export endpoint / button initiates browser download with text/csv Content-Type and UTF-8 BOM</td>
+              <td>BLOCKED: Requires active authenticated Supabase session. Endpoint /api/datasets/[id]/export returns 401 when unauthenticated.</td>
+              <td><span class="status-badge status-blocked">BLOCKED</span></td>
+              <td style="font-family: monospace;">0ms</td>
+              <td>
+                <div class="code-box">Precondition: Live user session required.</div>
+                
+                
+              </td>
+            </tr>
+            <tr data-status="BLOCKED">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">WEB-EXPORT-002</td>
+              <td><strong>Export</strong></td>
+              <td>XLSX Binary Spreadsheet Export</td>
+              <td style="color: var(--text-muted);">Export endpoint / button generates application/vnd.openxmlformats-officedocument.spreadsheetml.sheet workbook</td>
+              <td>BLOCKED: Requires active authenticated Supabase session. Endpoint /api/datasets/[id]/export?format=xlsx returns 401 when unauthenticated.</td>
+              <td><span class="status-badge status-blocked">BLOCKED</span></td>
+              <td style="font-family: monospace;">0ms</td>
+              <td>
+                <div class="code-box">Precondition: Live user session required.</div>
+                
+                
+              </td>
+            </tr>
+            <tr data-status="PASS">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">WEB-SETT-001</td>
+              <td><strong>Settings</strong></td>
+              <td>Protected Route Guard: /settings</td>
+              <td style="color: var(--text-muted);">Unauthenticated request to /settings redirects to /login</td>
+              <td>Protected route enforced; redirected to http://localhost:3000/login</td>
+              <td><span class="status-badge status-pass">PASS</span></td>
+              <td style="font-family: monospace;">145ms</td>
+              <td>
+                
+                
+                
+              </td>
+            </tr>
+            <tr data-status="BLOCKED">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">WEB-SETT-002</td>
+              <td><strong>Settings</strong></td>
+              <td>Settings & Masked API Key Management</td>
+              <td style="color: var(--text-muted);">Settings key management form accepts API key, saves encrypted value, and displays masked preview</td>
+              <td>BLOCKED: Requires active authenticated Supabase session to access /settings/keys and mutate /api/user/keys.</td>
+              <td><span class="status-badge status-blocked">BLOCKED</span></td>
+              <td style="font-family: monospace;">0ms</td>
+              <td>
+                <div class="code-box">Precondition: Live user session required.</div>
+                
+                
+              </td>
+            </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <footer>
+      DataReady AI Automated Quality Assurance & Testing Infrastructure &bull; Generated automatically
+    </footer>
+  </div>
+
+  <script>
+    function filterTable(status) {
+      document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      const rows = document.querySelectorAll('#test-table tbody tr');
+      rows.forEach(row => {
+        const rowStatus = row.getAttribute('data-status');
+        if (status === 'all' || rowStatus === status || (status === 'BLOCKED' && (rowStatus === 'BLOCKED' || rowStatus === 'NOT EXECUTED' || rowStatus === 'SKIPPED'))) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+  </script>
+</body>
+</html>

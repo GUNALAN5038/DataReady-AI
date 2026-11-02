@@ -43,7 +43,7 @@ export function calculateStatistics(data: Record<string, unknown>[], columns: st
           missing++
         } else {
           const num = Number(raw)
-          if (!isNaN(num)) {
+          if (!isNaN(num) && isFinite(num)) {
             values.push(num)
           } else {
             missing++

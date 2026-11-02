@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DataReady AI — Test Reports & Quality Assurance Hub</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #151d30;
+      --card-border: #223254;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --success: #10b981;
+      --amber: #f59e0b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 3rem 1.5rem; line-height: 1.6; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    .hero {
+      background: linear-gradient(135deg, #1e3a8a 0%, #1e1b4b 100%);
+      padding: 3rem 2rem;
+      border-radius: 1rem;
+      margin-bottom: 3rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+      text-align: center;
+    }
+    h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.75rem; letter-spacing: -0.03em; }
+    .subtitle { color: #93c5fd; font-size: 1.15rem; max-width: 750px; margin: 0 auto; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 0.75rem;
+      padding: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .card:hover { transform: translateY(-3px); border-color: #3b82f6; }
+    .card-tag { display: inline-block; padding: 0.25rem 0.65rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 1rem; }
+    .tag-blue { background: rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.4); }
+    .tag-green { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .tag-amber { background: rgba(245, 158, 11, 0.2); color: #fde68a; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .tag-purple { background: rgba(168, 85, 247, 0.2); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.4); }
+    .card-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .card-desc { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem; flex-grow: 1; }
+    .card-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.1rem;
+      border-radius: 0.5rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-outline { background: rgba(255, 255, 255, 0.05); color: #cbd5e1; border: 1px solid var(--card-border); }
+    .btn-outline:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
+    footer { text-align: center; color: var(--text-muted); font-size: 0.85rem; padding-top: 2rem; border-top: 1px solid var(--card-border); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="hero">
+      <h1>DataReady AI — Automated Testing & Quality Hub</h1>
+      <p class="subtitle">Complete Verification Across Web E2E (Selenium), Android E2E (Appium), Backend Load (k6) & Security / RLS Testing</p>
+    </div>
+
+    <div class="grid">
+      <!-- Master Consolidated -->
+      <div class="card" style="border-color: #3b82f6;">
+        <div>
+          <span class="card-tag tag-blue">Consolidated Report</span>
+          <h2 class="card-title">Executive Quality Gate</h2>
+          <p class="card-desc">Consolidated multi-stream quality evaluation combining Selenium, Appium, k6 load testing, and security posture with KPI scorecards.</p>
+        </div>
+        <div class="card-actions">
+          <a class="btn btn-primary" href="final/final-testing-report.html">View HTML Report</a>
+          <a class="btn btn-outline" href="final/DataReady_AI_Final_Test_Report.xlsx" download>Excel Workbook</a>
+        </div>
+      </div>
+
+      <!-- Web Selenium -->
+      <div class="card">
+        <div>
+          <span class="card-tag tag-green">Web Automation</span>
+          <h2 class="card-title">Selenium Web E2E</h2>
+          <p class="card-desc">Automated Chrome browser validation across authentication, dashboard navigation, protected route guards, and UI responsive states.</p>
+        </div>
+        <div class="card-actions">
+          <a class="btn btn-primary" href="web/selenium-report.html">View HTML Report</a>
+          <a class="btn btn-outline" href="web/selenium-results.xlsx" download>Excel Workbook</a>
+        </div>
+      </div>
+
+      <!-- Mobile Appium -->
+      <div class="card">
+        <div>
+          <span class="card-tag tag-amber">Mobile Automation</span>
+          <h2 class="card-title">Appium Android Mobile</h2>
+          <p class="card-desc">UiAutomator2 automation test suite for the React Native / Expo application, with documented environmental preconditions.</p>
+        </div>
+        <div class="card-actions">
+          <a class="btn btn-primary" href="mobile/appium-report.html">View HTML Report</a>
+          <a class="btn btn-outline" href="mobile/appium-results.xlsx" download>Excel Workbook</a>
+        </div>
+      </div>
+
+      <!-- k6 Load Testing -->
+      <div class="card">
+        <div>
+          <span class="card-tag tag-purple">Load & Stress</span>
+          <h2 class="card-title">k6 Backend Performance</h2>
+          <p class="card-desc">100 concurrent virtual users sustained for 1 minute on Next.js read endpoints with latency percentiles (p50, p95, p99) and RPS.</p>
+        </div>
+        <div class="card-actions">
+          <a class="btn btn-primary" href="performance/k6-performance-report.html">View HTML Report</a>
+          <a class="btn btn-outline" href="performance/k6-performance-results.xlsx" download>Excel Workbook</a>
+        </div>
+      </div>
+
+      <!-- Security Testing -->
+      <div class="card">
+        <div>
+          <span class="card-tag tag-green">Security Audit</span>
+          <h2 class="card-title">Security & RLS Isolation</h2>
+          <p class="card-desc">Zero secret leakage static scan, Bearer token cryptographic validation, multi-tenant database RLS, and AES-256-GCM cipher checks.</p>
+        </div>
+        <div class="card-actions">
+          <a class="btn btn-primary" href="security/security-report.html">View HTML Report</a>
+          <a class="btn btn-outline" href="security/security-results.xlsx" download>Excel Workbook</a>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      DataReady AI Automated Quality Infrastructure &bull; Strict Zero Secret Leakage Standard
+    </footer>
+  </div>
+</body>
+</html>

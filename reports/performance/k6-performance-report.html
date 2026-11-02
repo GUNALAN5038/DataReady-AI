@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DataReady AI — k6 Performance Load Testing Results</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #3b82f6;
+      --success: #10b981;
+      --success-bg: rgba(16, 185, 129, 0.15);
+      --danger: #ef4444;
+      --danger-bg: rgba(239, 68, 68, 0.15);
+      --warning: #f59e0b;
+      --warning-bg: rgba(245, 158, 11, 0.15);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: var(--bg); color: var(--text-main); padding: 2rem; min-height: 100vh; }
+    .container { max-width: 1400px; margin: 0 auto; }
+    header {
+      background: linear-gradient(135deg, #1e3a8a 0%, #312e81 100%);
+      padding: 2rem;
+      border-radius: 1rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .header-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+    h1 { font-size: 1.8rem; font-weight: 700; color: #ffffff; letter-spacing: -0.025em; }
+    .badge-category { background: rgba(59, 130, 246, 0.3); border: 1px solid #60a5fa; color: #93c5fd; padding: 0.3rem 0.8rem; border-radius: 9999px; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; }
+    .meta-bar { margin-top: 1rem; font-size: 0.9rem; color: #cbd5e1; display: flex; gap: 2rem; flex-wrap: wrap; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .kpi-card { background: var(--card-bg); border: 1px solid var(--card-border); padding: 1.5rem; border-radius: 0.75rem; }
+    .kpi-label { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+    .kpi-val { font-size: 2rem; font-weight: 700; color: var(--text-main); }
+    .kpi-val.pass { color: var(--success); }
+    .kpi-val.fail { color: var(--danger); }
+    .kpi-val.warn { color: var(--warning); }
+    .filter-bar { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .filter-btn { background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-muted); padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: all 0.2s; }
+    .filter-btn.active, .filter-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .table-container { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 0.75rem; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2); margin-bottom: 2rem; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
+    th { background: #0f172a; padding: 1rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; border-bottom: 1px solid var(--card-border); }
+    td { padding: 1rem; border-bottom: 1px solid rgba(51, 65, 85, 0.5); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover { background: rgba(255, 255, 255, 0.02); }
+    .status-badge { display: inline-block; padding: 0.25rem 0.65rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+    .status-pass { background: var(--success-bg); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .status-fail { background: var(--danger-bg); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .status-blocked { background: var(--warning-bg); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .status-skipped { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3); }
+    .code-box { background: #0b0f19; padding: 0.5rem; border-radius: 0.375rem; font-family: monospace; font-size: 0.8rem; color: #fca5a5; max-height: 150px; overflow-y: auto; white-space: pre-wrap; margin-top: 0.5rem; border: 1px solid #7f1d1d; }
+    .thumb-link { display: inline-block; color: #60a5fa; text-decoration: underline; font-size: 0.8rem; margin-top: 0.3rem; }
+    footer { text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 2rem 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="header-top">
+        <h1>DataReady AI — k6 Performance Load Testing Results</h1>
+        <span class="badge-category">Performance & Load Testing</span>
+      </div>
+      <div class="meta-bar">
+        <span><strong>Environment:</strong> Local Next.js Production Server (http://localhost:3000)</span>
+        <span><strong>Executed At:</strong> 30/10/2026, 3:32:22 pm</span>
+        <span><strong>Framework:</strong> k6 v2.3.0 (Grafana Labs)</span>
+        <span><strong>Total Duration:</strong> 45.00s</span>
+      </div>
+    </header>
+
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Total Tests</div>
+        <div class="kpi-val">9629</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Passed</div>
+        <div class="kpi-val pass">9629</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Failed</div>
+        <div class="kpi-val fail">0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Blocked</div>
+        <div class="kpi-val warn">0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Skipped</div>
+        <div class="kpi-val" style="color: #94a3b8;">0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Pass Rate</div>
+        <div class="kpi-val pass">100%</div>
+      </div>
+    </div>
+
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+      <div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 1.25rem; border-radius: 0.75rem;">
+        <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Total Requests</div>
+        <div style="font-size: 1.8rem; font-weight: 700; color: #60a5fa; margin-top: 0.25rem;">9,629</div>
+      </div>
+      <div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 1.25rem; border-radius: 0.75rem;">
+        <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Requests / Sec (RPS)</div>
+        <div style="font-size: 1.8rem; font-weight: 700; color: #34d399; margin-top: 0.25rem;">210.68</div>
+      </div>
+      <div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 1.25rem; border-radius: 0.75rem;">
+        <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Avg Latency</div>
+        <div style="font-size: 1.8rem; font-weight: 700; color: #a78bfa; margin-top: 0.25rem;">305.92 ms</div>
+      </div>
+      <div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 1.25rem; border-radius: 0.75rem;">
+        <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">p95 Latency</div>
+        <div style="font-size: 1.8rem; font-weight: 700; color: #f472b6; margin-top: 0.25rem;">431.52 ms</div>
+      </div>
+      <div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 1.25rem; border-radius: 0.75rem;">
+        <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Failure Rate</div>
+        <div style="font-size: 1.8rem; font-weight: 700; color: #34d399; margin-top: 0.25rem;">0%</div>
+      </div>
+    </div>
+
+    <div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 1.5rem; border-radius: 0.75rem; margin-bottom: 2rem;">
+      <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.75rem; color: #60a5fa;">Multi-Scenario Endpoints Coverage</h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+        <thead>
+          <tr style="border-bottom: 1px solid var(--card-border); text-align: left; color: var(--text-muted);">
+            <th style="padding: 0.5rem;">Scenario</th>
+            <th style="padding: 0.5rem;">Path</th>
+            <th style="padding: 0.5rem;">Category</th>
+            <th style="padding: 0.5rem;">Expected Response / Auth Gate</th>
+            <th style="padding: 0.5rem;">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+            <tr style="border-bottom: 1px solid rgba(51, 65, 85, 0.4);">
+              <td style="padding: 0.6rem; font-weight: 600; color: #fff;">Public Login</td>
+              <td style="padding: 0.6rem; font-family: monospace; color: #93c5fd;">/login</td>
+              <td style="padding: 0.6rem; color: var(--text-muted);">Public SSR Page</td>
+              <td style="padding: 0.6rem;">200 OK</td>
+              <td style="padding: 0.6rem; color: #34d399; font-weight: 700;">MET</td>
+            </tr>
+          
+            <tr style="border-bottom: 1px solid rgba(51, 65, 85, 0.4);">
+              <td style="padding: 0.6rem; font-weight: 600; color: #fff;">Public Landing</td>
+              <td style="padding: 0.6rem; font-family: monospace; color: #93c5fd;">/</td>
+              <td style="padding: 0.6rem; color: var(--text-muted);">Public Portal Page</td>
+              <td style="padding: 0.6rem;">200 OK</td>
+              <td style="padding: 0.6rem; color: #34d399; font-weight: 700;">MET</td>
+            </tr>
+          
+            <tr style="border-bottom: 1px solid rgba(51, 65, 85, 0.4);">
+              <td style="padding: 0.6rem; font-weight: 600; color: #fff;">User Profile API</td>
+              <td style="padding: 0.6rem; font-family: monospace; color: #93c5fd;">/api/user/profile</td>
+              <td style="padding: 0.6rem; color: var(--text-muted);">Protected API Route</td>
+              <td style="padding: 0.6rem;">401 Unauthorized (Auth Gate)</td>
+              <td style="padding: 0.6rem; color: #34d399; font-weight: 700;">MET</td>
+            </tr>
+          
+            <tr style="border-bottom: 1px solid rgba(51, 65, 85, 0.4);">
+              <td style="padding: 0.6rem; font-weight: 600; color: #fff;">Chat Conversations API</td>
+              <td style="padding: 0.6rem; font-family: monospace; color: #93c5fd;">/api/chat/conversations</td>
+              <td style="padding: 0.6rem; color: var(--text-muted);">Protected API Route</td>
+              <td style="padding: 0.6rem;">401 Unauthorized (Auth Gate)</td>
+              <td style="padding: 0.6rem; color: #34d399; font-weight: 700;">MET</td>
+            </tr>
+          
+            <tr style="border-bottom: 1px solid rgba(51, 65, 85, 0.4);">
+              <td style="padding: 0.6rem; font-weight: 600; color: #fff;">User Keys API</td>
+              <td style="padding: 0.6rem; font-family: monospace; color: #93c5fd;">/api/user/keys</td>
+              <td style="padding: 0.6rem; color: var(--text-muted);">Protected API Route</td>
+              <td style="padding: 0.6rem;">401 Unauthorized (Auth Gate)</td>
+              <td style="padding: 0.6rem; color: #34d399; font-weight: 700;">MET</td>
+            </tr>
+          
+        </tbody>
+      </table>
+    </div>
+
+    <div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 1.5rem; border-radius: 0.75rem; margin-bottom: 2rem;">
+      <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; color: #34d399;">Historical Baseline Comparison</h3>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">Comparison against historical baseline test (which targeted only <code>/login</code>):</p>
+      <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+        <thead>
+          <tr style="border-bottom: 1px solid var(--card-border); text-align: left; color: var(--text-muted);">
+            <th style="padding: 0.5rem;">Metric</th>
+            <th style="padding: 0.5rem;">Historical Baseline (/login only)</th>
+            <th style="padding: 0.5rem;">Current Multi-Scenario Run</th>
+            <th style="padding: 0.5rem;">Variance</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+            <tr style="border-bottom: 1px solid rgba(51, 65, 85, 0.4);">
+              <td style="padding: 0.6rem; font-weight: 600; color: #fff;">Tested Route Scope</td>
+              <td style="padding: 0.6rem; color: #cbd5e1;">Single Route (/login only)</td>
+              <td style="padding: 0.6rem; font-weight: 600; color: #93c5fd;">5 Distinct Routes (Public & API)</td>
+              <td style="padding: 0.6rem; font-family: monospace; color: #34d399;">+4 Routes</td>
+            </tr>
+          
+            <tr style="border-bottom: 1px solid rgba(51, 65, 85, 0.4);">
+              <td style="padding: 0.6rem; font-weight: 600; color: #fff;">Virtual Users (VUs)</td>
+              <td style="padding: 0.6rem; color: #cbd5e1;">100 VUs</td>
+              <td style="padding: 0.6rem; font-weight: 600; color: #93c5fd;">100 VUs</td>
+              <td style="padding: 0.6rem; font-family: monospace; color: #34d399;">Identical</td>
+            </tr>
+          
+            <tr style="border-bottom: 1px solid rgba(51, 65, 85, 0.4);">
+              <td style="padding: 0.6rem; font-weight: 600; color: #fff;">Total HTTP Requests</td>
+              <td style="padding: 0.6rem; color: #cbd5e1;">3418</td>
+              <td style="padding: 0.6rem; font-weight: 600; color: #93c5fd;">9629</td>
+              <td style="padding: 0.6rem; font-family: monospace; color: #34d399;">+6211</td>
+            </tr>
+          
+            <tr style="border-bottom: 1px solid rgba(51, 65, 85, 0.4);">
+              <td style="padding: 0.6rem; font-weight: 600; color: #fff;">Throughput (RPS)</td>
+              <td style="padding: 0.6rem; color: #cbd5e1;">56.45 req/s</td>
+              <td style="padding: 0.6rem; font-weight: 600; color: #93c5fd;">210.68 req/s</td>
+              <td style="padding: 0.6rem; font-family: monospace; color: #34d399;">154.23 req/s</td>
+            </tr>
+          
+            <tr style="border-bottom: 1px solid rgba(51, 65, 85, 0.4);">
+              <td style="padding: 0.6rem; font-weight: 600; color: #fff;">Average Latency</td>
+              <td style="padding: 0.6rem; color: #cbd5e1;">23.36 ms</td>
+              <td style="padding: 0.6rem; font-weight: 600; color: #93c5fd;">305.92 ms</td>
+              <td style="padding: 0.6rem; font-family: monospace; color: #34d399;">282.56 ms</td>
+            </tr>
+          
+            <tr style="border-bottom: 1px solid rgba(51, 65, 85, 0.4);">
+              <td style="padding: 0.6rem; font-weight: 600; color: #fff;">p95 Latency</td>
+              <td style="padding: 0.6rem; color: #cbd5e1;">44.97 ms</td>
+              <td style="padding: 0.6rem; font-weight: 600; color: #93c5fd;">431.52 ms</td>
+              <td style="padding: 0.6rem; font-family: monospace; color: #34d399;">386.55 ms</td>
+            </tr>
+          
+            <tr style="border-bottom: 1px solid rgba(51, 65, 85, 0.4);">
+              <td style="padding: 0.6rem; font-weight: 600; color: #fff;">Failure Rate</td>
+              <td style="padding: 0.6rem; color: #cbd5e1;">0%</td>
+              <td style="padding: 0.6rem; font-weight: 600; color: #93c5fd;">0%</td>
+              <td style="padding: 0.6rem; font-family: monospace; color: #34d399;">0.00%</td>
+            </tr>
+          
+        </tbody>
+      </table>
+    </div>
+  
+
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="filterTable('all')">All Tests (9629)</button>
+      <button class="filter-btn" onclick="filterTable('PASS')">Passed (9629)</button>
+      <button class="filter-btn" onclick="filterTable('FAIL')">Failed (0)</button>
+      <button class="filter-btn" onclick="filterTable('BLOCKED')">Blocked (0)</button>
+      
+    </div>
+
+    <div class="table-container">
+      <table id="test-table">
+        <thead>
+          <tr>
+            <th>Test ID</th>
+            <th>Module</th>
+            <th>Test Case</th>
+            <th>Expected Result</th>
+            <th>Actual Result</th>
+            <th>Status</th>
+            <th>Duration</th>
+            <th>Details / Evidence</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+            <tr data-status="PASS">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">K6-METRIC-001</td>
+              <td><strong>HTTP Performance</strong></td>
+              <td>Virtual Users (VUs)</td>
+              <td style="color: var(--text-muted);">100 VUs</td>
+              <td>100</td>
+              <td><span class="status-badge status-pass">PASS</span></td>
+              <td style="font-family: monospace;">305.92ms</td>
+              <td>
+                
+                
+                
+              </td>
+            </tr>
+            <tr data-status="PASS">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">K6-METRIC-002</td>
+              <td><strong>HTTP Performance</strong></td>
+              <td>Load Duration</td>
+              <td style="color: var(--text-muted);">45 seconds</td>
+              <td>45s</td>
+              <td><span class="status-badge status-pass">PASS</span></td>
+              <td style="font-family: monospace;">305.92ms</td>
+              <td>
+                
+                
+                
+              </td>
+            </tr>
+            <tr data-status="PASS">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">K6-METRIC-003</td>
+              <td><strong>HTTP Performance</strong></td>
+              <td>Total HTTP Requests</td>
+              <td style="color: var(--text-muted);">> 1,000 reqs</td>
+              <td>9629</td>
+              <td><span class="status-badge status-pass">PASS</span></td>
+              <td style="font-family: monospace;">305.92ms</td>
+              <td>
+                
+                
+                
+              </td>
+            </tr>
+            <tr data-status="PASS">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">K6-METRIC-004</td>
+              <td><strong>HTTP Performance</strong></td>
+              <td>Requests Per Second (RPS)</td>
+              <td style="color: var(--text-muted);">> 50 req/s</td>
+              <td>210.68 req/s</td>
+              <td><span class="status-badge status-pass">PASS</span></td>
+              <td style="font-family: monospace;">305.92ms</td>
+              <td>
+                
+                
+                
+              </td>
+            </tr>
+            <tr data-status="PASS">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">K6-METRIC-005</td>
+              <td><strong>HTTP Performance</strong></td>
+              <td>Average Latency</td>
+              <td style="color: var(--text-muted);">< 500 ms</td>
+              <td>305.92 ms</td>
+              <td><span class="status-badge status-pass">PASS</span></td>
+              <td style="font-family: monospace;">305.92ms</td>
+              <td>
+                
+                
+                
+              </td>
+            </tr>
+            <tr data-status="PASS">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">K6-METRIC-006</td>
+              <td><strong>HTTP Performance</strong></td>
+              <td>Minimum Latency</td>
+              <td style="color: var(--text-muted);">N/A</td>
+              <td>8.53 ms</td>
+              <td><span class="status-badge status-pass">PASS</span></td>
+              <td style="font-family: monospace;">305.92ms</td>
+              <td>
+                
+                
+                
+              </td>
+            </tr>
+            <tr data-status="PASS">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">K6-METRIC-007</td>
+              <td><strong>HTTP Performance</strong></td>
+              <td>Median Latency (p50)</td>
+              <td style="color: var(--text-muted);">< 400 ms</td>
+              <td>280.22 ms</td>
+              <td><span class="status-badge status-pass">PASS</span></td>
+              <td style="font-family: monospace;">305.92ms</td>
+              <td>
+                
+                
+                
+              </td>
+            </tr>
+            <tr data-status="PASS">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">K6-METRIC-008</td>
+              <td><strong>HTTP Performance</strong></td>
+              <td>90th Percentile Latency (p90)</td>
+              <td style="color: var(--text-muted);">< 800 ms</td>
+              <td>394.52 ms</td>
+              <td><span class="status-badge status-pass">PASS</span></td>
+              <td style="font-family: monospace;">305.92ms</td>
+              <td>
+                
+                
+                
+              </td>
+            </tr>
+            <tr data-status="PASS">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">K6-METRIC-009</td>
+              <td><strong>HTTP Performance</strong></td>
+              <td>95th Percentile Latency (p95)</td>
+              <td style="color: var(--text-muted);">< 1000 ms</td>
+              <td>431.52 ms</td>
+              <td><span class="status-badge status-pass">PASS</span></td>
+              <td style="font-family: monospace;">305.92ms</td>
+              <td>
+                
+                
+                
+              </td>
+            </tr>
+            <tr data-status="PASS">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">K6-METRIC-010</td>
+              <td><strong>HTTP Performance</strong></td>
+              <td>99th Percentile Latency (p99)</td>
+              <td style="color: var(--text-muted);">< 1500 ms</td>
+              <td>0 ms</td>
+              <td><span class="status-badge status-pass">PASS</span></td>
+              <td style="font-family: monospace;">305.92ms</td>
+              <td>
+                
+                
+                
+              </td>
+            </tr>
+            <tr data-status="PASS">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">K6-METRIC-011</td>
+              <td><strong>HTTP Performance</strong></td>
+              <td>Maximum Latency</td>
+              <td style="color: var(--text-muted);">N/A</td>
+              <td>5014.5 ms</td>
+              <td><span class="status-badge status-pass">PASS</span></td>
+              <td style="font-family: monospace;">305.92ms</td>
+              <td>
+                
+                
+                
+              </td>
+            </tr>
+            <tr data-status="PASS">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">K6-METRIC-012</td>
+              <td><strong>HTTP Performance</strong></td>
+              <td>Failed Requests Count</td>
+              <td style="color: var(--text-muted);">0</td>
+              <td>0</td>
+              <td><span class="status-badge status-pass">PASS</span></td>
+              <td style="font-family: monospace;">305.92ms</td>
+              <td>
+                
+                
+                
+              </td>
+            </tr>
+            <tr data-status="PASS">
+              <td style="font-family: monospace; font-weight: 600; color: #93c5fd;">K6-METRIC-013</td>
+              <td><strong>HTTP Performance</strong></td>
+              <td>Error Rate (%)</td>
+              <td style="color: var(--text-muted);">< 1.0%</td>
+              <td>0%</td>
+              <td><span class="status-badge status-pass">PASS</span></td>
+              <td style="font-family: monospace;">305.92ms</td>
+              <td>
+                
+                
+                
+              </td>
+            </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <footer>
+      DataReady AI Automated Quality Assurance & Testing Infrastructure &bull; Generated automatically
+    </footer>
+  </div>
+
+  <script>
+    function filterTable(status) {
+      document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      const rows = document.querySelectorAll('#test-table tbody tr');
+      rows.forEach(row => {
+        const rowStatus = row.getAttribute('data-status');
+        if (status === 'all' || rowStatus === status || (status === 'BLOCKED' && (rowStatus === 'BLOCKED' || rowStatus === 'NOT EXECUTED' || rowStatus === 'SKIPPED'))) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+  </script>
+</body>
+</html>

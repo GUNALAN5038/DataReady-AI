@@ -1,0 +1,14 @@
+{
+  "name": "dataready-ai-mobile-appium",
+  "version": "1.0.0",
+  "description": "Appium Android E2E automation for DataReady AI",
+  "private": true,
+  "main": "tests/run-all-tests.js",
+  "scripts": {
+    "test": "node tests/run-all-tests.js"
+  },
+  "dependencies": {
+    "webdriverio": "^8.38.0",
+    "exceljs": "^4.4.0"
+  }
+}

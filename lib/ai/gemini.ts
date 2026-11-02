@@ -9,14 +9,7 @@ const resolvedModelCache = new Map<string, string>()
  */
 export const OBSOLETE_MODELS = new Set([
   'gemini-1.0-pro',
-  'gemini-1.5-flash',
-  'gemini-1.5-flash-latest',
-  'gemini-1.5-pro',
-  'gemini-1.5-pro-latest',
-  'gemini-2.0-flash',
-  'gemini-2.0-flash-exp',
-  'gemini-2.5-flash',
-  'gemini-2.5-pro',
+  'gemini-pro',
 ])
 
 /**
@@ -66,7 +59,12 @@ export async function probeModelAvailability(apiKey: string, modelId: string): P
     }
 
     const data = await res.json().catch(() => ({}))
-    const errorMsg = data?.error?.message || `HTTP ${res.status}`
+    let errorMsg = data?.error?.message || `HTTP ${res.status}`
+    if (data?.error?.details) {
+      try {
+        errorMsg += ` ${JSON.stringify(data.error.details)}`
+      } catch {}
+    }
     return { available: false, status: res.status, message: errorMsg }
   } catch (err: unknown) {
     return { available: false, status: 0, message: err instanceof Error ? err.message : 'Network error' }
@@ -96,10 +94,12 @@ export async function resolveGeminiModelId(apiKey: string, customModel?: string)
 
   // 4. Candidate list in prioritized order per requirements
   const candidateModels = [
-    'models/gemini-3.6-flash', // Initial candidate
-    'models/gemini-3.8-flash', // Alternative verified available & Google recommended
-    'models/gemini-3.7-flash',
-    'models/gemini-3.5-flash',
+    'models/gemini-2.5-flash',
+    'models/gemini-2.0-flash',
+    'models/gemini-1.5-flash',
+    'models/gemini-1.5-pro',
+    'models/gemini-3.6-flash',
+    'models/gemini-3.8-flash',
   ]
 
   // Probe candidates sequentially to guarantee we never select an unavailable model
@@ -115,7 +115,7 @@ export async function resolveGeminiModelId(apiKey: string, customModel?: string)
         throw new Error('Your Google Gemini API key is invalid or unauthorized. Please verify and re-enter your key in Settings.')
       }
       if (probe.status === 429) {
-        throw new Error('Google Gemini rate limit or quota exceeded (429). Please wait a moment and try again.')
+        throw new Error(`Google Gemini quota or rate limit exceeded (429): ${probe.message || 'RESOURCE_EXHAUSTED'}`)
       }
     }
   }

@@ -78,6 +78,13 @@ export function applyTransformations(
 
       case 'drop_missing': {
         const initialLength = currentData.length
+        if (Array.isArray(transform.columns)) {
+          for (const col of transform.columns) {
+            if (!currentColumns.includes(col)) {
+              throw new Error(`Column "${col}" does not exist in dataset.`)
+            }
+          }
+        }
         const colsToCheck = transform.columns === 'all' ? currentColumns : transform.columns
 
         currentData = currentData.filter(row => {
@@ -96,6 +103,13 @@ export function applyTransformations(
 
       case 'drop_duplicates': {
         const initialLength = currentData.length
+        if (Array.isArray(transform.columns)) {
+          for (const col of transform.columns) {
+            if (!currentColumns.includes(col)) {
+              throw new Error(`Column "${col}" does not exist in dataset.`)
+            }
+          }
+        }
         const colsToCheck = (!transform.columns || transform.columns === 'all')
           ? currentColumns
           : transform.columns
@@ -150,7 +164,7 @@ export function applyTransformations(
             const val = row[column]
             if (!isMissingValue(val)) {
               const num = Number(val)
-              if (!isNaN(num)) {
+              if (!isNaN(num) && isFinite(num)) {
                 numericVals.push(num)
               }
             }
@@ -220,7 +234,7 @@ export function applyTransformations(
           const val = row[column]
           if (!isMissingValue(val)) {
             const num = Number(val)
-            if (!isNaN(num)) {
+            if (!isNaN(num) && isFinite(num)) {
               numericVals.push(num)
             }
           }

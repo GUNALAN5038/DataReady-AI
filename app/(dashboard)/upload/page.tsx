@@ -32,6 +32,11 @@ export default function UploadPage() {
 
   const validateAndSetFile = (selected: File) => {
     setError(null)
+    if (!selected || selected.size === 0) {
+      setError('The selected file is empty (0 bytes). Please upload a valid dataset.')
+      return
+    }
+
     const ext = selected.name.split('.').pop()?.toLowerCase()
     
     if (!['csv', 'xlsx', 'xls', 'json'].includes(ext || '')) {
@@ -82,6 +87,10 @@ export default function UploadPage() {
               reject(new Error('Failed to parse CSV'))
             } else {
               const columns = results.meta.fields || []
+              if (columns.length === 0 && results.data.length === 0) {
+                reject(new Error('The CSV file contains no columns or data rows.'))
+                return
+              }
               resolve({
                 rowCount: 0, // PapaParse preview doesn't give total count, we'll calculate it or just set 0 and update later
                 colCount: columns.length,
@@ -102,7 +111,17 @@ export default function UploadPage() {
             const worksheet = workbook.Sheets[firstSheetName]
             const json = XLSX.utils.sheet_to_json(worksheet)
             
+            if (!json || json.length === 0) {
+              reject(new Error('The Excel sheet contains no data rows.'))
+              return
+            }
+
             const columns = Object.keys(json[0] as Record<string, unknown> || {})
+            if (columns.length === 0) {
+              reject(new Error('The Excel sheet contains no columns.'))
+              return
+            }
+
             resolve({
               rowCount: json.length,
               colCount: columns.length,
@@ -124,7 +143,15 @@ export default function UploadPage() {
               reject(new Error('JSON must be an array of objects'))
               return
             }
+            if (json.length === 0) {
+              reject(new Error('JSON array is empty.'))
+              return
+            }
             const columns = Object.keys(json[0] || {})
+            if (columns.length === 0) {
+              reject(new Error('JSON objects contain no properties.'))
+              return
+            }
             resolve({
               rowCount: json.length,
               colCount: columns.length,

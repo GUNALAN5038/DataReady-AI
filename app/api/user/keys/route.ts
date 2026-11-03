@@ -1,10 +1,10 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getAuthenticatedUser } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { encryptCredential, maskApiKey } from '@/lib/crypto'
 
-export async function GET() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+export async function GET(request: Request) {
+  const supabase = await createClient(request)
+  const user = (await getAuthenticatedUser()) || (await supabase.auth.getUser()).data?.user
 
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -32,8 +32,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const supabase = await createClient(request)
+  const user = (await getAuthenticatedUser()) || (await supabase.auth.getUser()).data?.user
 
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -92,8 +92,8 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const supabase = await createClient(request)
+  const user = (await getAuthenticatedUser()) || (await supabase.auth.getUser()).data?.user
 
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

@@ -27,7 +27,7 @@ function createDirectStreamResponse(text: string, conversationId: string) {
 
 export async function POST(req: Request) {
   try {
-    const supabase = await createClient()
+    const supabase = await createClient(req)
     const user = (await getAuthenticatedUser()) || (await supabase.auth.getUser()).data?.user
 
     if (!user) {

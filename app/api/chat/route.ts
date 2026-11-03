@@ -205,7 +205,7 @@ export async function POST(req: Request) {
     // 5. Initialize AI Model (Google Gemini via user key or system env key)
     let model
     try {
-      model = await getAIProvider(user.id)
+      model = await getAIProvider(user.id, supabase)
     } catch (providerError: unknown) {
       return NextResponse.json(
         { error: providerError instanceof Error ? providerError.message : 'AI provider not configured.' },

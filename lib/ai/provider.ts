@@ -8,7 +8,7 @@ import { getGeminiModel } from './gemini'
  * 2. GEMINI_API_KEY or GOOGLE_GENERATIVE_AI_API_KEY from process.env
  * 3. Throws a clear, actionable error if neither is available.
  */
-export async function getAIProvider(userId?: string) {
+export async function getAIProvider(userId?: string, client?: any) {
   let userKeyError: string | null = null
 
   // 1. If a userId is provided, look for an active user-configured key
@@ -16,7 +16,7 @@ export async function getAIProvider(userId?: string) {
     let keyRecord: { id: string; encrypted_key: string } | null = null
 
     try {
-      const supabase = await createClient()
+      const supabase = client || (await createClient())
       const { data, error: keyQueryError } = await supabase
         .from('api_provider_keys')
         .select('id, encrypted_key')
@@ -58,7 +58,7 @@ export async function getAIProvider(userId?: string) {
       if (decryptedKey && decryptedKey.trim().length > 0) {
         // Update last_used_at asynchronously without blocking
         try {
-          const supabase = await createClient()
+          const supabase = client || (await createClient())
           supabase
             .from('api_provider_keys')
             .update({ last_used_at: new Date().toISOString() })

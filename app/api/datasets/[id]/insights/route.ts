@@ -478,7 +478,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     // Resolve AI model prioritizing user's configured key (AFTER confirming usable analysis exists)
     let model
     try {
-      model = await getAIProvider(user.id)
+      model = await getAIProvider(user.id, supabase)
     } catch (providerError: unknown) {
       const classified = classifyAIError(providerError)
       return NextResponse.json(

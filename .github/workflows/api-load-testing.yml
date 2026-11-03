@@ -1,0 +1,68 @@
+name: API Baseline & Load Testing (k6)
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main, feat/*]
+    paths:
+      - 'app/api/**'
+      - 'DataReady_AI_LoadTesting/**'
+
+jobs:
+  k6-load-testing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Load Testing Dependencies
+        working-directory: DataReady_AI_LoadTesting
+        run: npm install
+
+      - name: Install k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+
+      - name: Start Next.js Server
+        run: |
+          npm ci
+          npm run build
+          npm run start &
+          npx wait-on http://localhost:3000 --timeout 60000
+
+      - name: Execute k6 Load Test
+        working-directory: DataReady_AI_LoadTesting
+        env:
+          K6_VUS: 100
+          K6_DURATION: 1m
+          BASE_URL: http://localhost:3000
+        run: node scripts/run-load-test.js
+
+      - name: Upload Load Testing Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-load-testing-reports
+          path: |
+            DataReady_AI_LoadTesting/reports/excel/
+            DataReady_AI_LoadTesting/reports/html/
+            DataReady_AI_LoadTesting/reports/json/
+            reports/final-testing/DataReadyAI_Load_Test_Report.xlsx
+            reports/final-testing/load-testing.html
+
+      - name: Generate GitHub Step Summary
+        if: always()
+        run: |
+          echo "### ⚡ API Baseline & Load Testing Results" >> $GITHUB_STEP_SUMMARY
+          echo "- **Engine:** Grafana k6" >> $GITHUB_STEP_SUMMARY
+          echo "- **Concurrency:** 100 VUs (1m duration)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Artifacts Uploaded:** Excel report, HTML report, raw JSON summary" >> $GITHUB_STEP_SUMMARY

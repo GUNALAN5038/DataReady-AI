@@ -1,0 +1,15 @@
+{
+  "name": "dataready-ai-appium",
+  "version": "1.0.0",
+  "description": "Appium Mobile Automation Suite for DataReady AI Android App",
+  "private": true,
+  "main": "scripts/run-android-tests.js",
+  "scripts": {
+    "test": "node scripts/run-android-tests.js",
+    "install:apk": "node scripts/install-apk.js"
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0",
+    "appium": "^3.9.0"
+  }
+}

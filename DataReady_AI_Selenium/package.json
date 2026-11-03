@@ -1,0 +1,15 @@
+{
+  "name": "dataready-ai-selenium",
+  "version": "1.0.0",
+  "description": "Comprehensive Selenium Web E2E testing framework for DataReady AI",
+  "private": true,
+  "main": "run-all-web-tests.js",
+  "scripts": {
+    "test": "node run-all-web-tests.js"
+  },
+  "dependencies": {
+    "selenium-webdriver": "^4.27.0",
+    "exceljs": "^4.4.0",
+    "chai": "^4.3.7"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "dataready-ai-loadtesting",
+  "version": "1.0.0",
+  "description": "API Baseline & Load Testing with k6 for DataReady AI",
+  "private": true,
+  "scripts": {
+    "test": "node scripts/run-load-test.js",
+    "report": "node scripts/generateExcelReport.js"
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0"
+  }
+}

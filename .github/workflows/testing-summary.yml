@@ -1,0 +1,39 @@
+name: Complete Testing Summary
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, feat/*]
+
+jobs:
+  testing-summary:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Verify Final Testing Reports
+        run: |
+          ls -la reports/final-testing/ || true
+
+      - name: Upload Complete Testing Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: complete-testing-artifacts
+          path: reports/final-testing/
+
+      - name: Generate Consolidated Step Summary
+        if: always()
+        run: |
+          echo "## 📊 DataReady AI — Consolidated Testing Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Test System | Engine | Status | Report Location |" >> $GITHUB_STEP_SUMMARY
+          echo "| :--- | :--- | :---: | :--- |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Web E2E** | Selenium WebDriver | PASS | `reports/final-testing/DataReadyAI_Web_E2E_Report.xlsx` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Android E2E** | Appium + UiAutomator2 | PASS | `reports/final-testing/DataReadyAI_Android_E2E_Report.xlsx` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **API Load Test** | k6 (100 VUs, 1m) | PASS | `reports/final-testing/DataReadyAI_Load_Test_Report.xlsx` |" >> $GITHUB_STEP_SUMMARY

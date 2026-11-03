@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DataReady AI — Web E2E Automation Report</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen p-8 font-sans">
+  <div class="max-w-7xl mx-auto space-y-8">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-6 gap-4">
+      <div>
+        <h1 class="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+          <span class="p-2 bg-indigo-600 rounded-lg text-white">🚀</span>
+          DataReady AI — Web E2E Automation Report
+        </h1>
+        <p class="text-slate-400 mt-1">Selenium WebDriver + Headless Chrome Execution Results</p>
+      </div>
+      <div class="text-right text-xs text-slate-400 font-mono">
+        <div>Target: <span class="text-indigo-400">http://localhost:3000</span></div>
+        <div>Date: 2026-11-03T12:03:24.530Z</div>
+      </div>
+    </div>
+
+    <!-- Summary Metrics Cards -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+        <div class="text-xs text-slate-400 font-medium">Total Tests</div>
+        <div class="text-2xl font-bold text-white mt-1">47</div>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+        <div class="text-xs text-slate-400 font-medium">Passed</div>
+        <div class="text-2xl font-bold text-emerald-400 mt-1">47</div>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+        <div class="text-xs text-slate-400 font-medium">Failed</div>
+        <div class="text-2xl font-bold text-slate-400 mt-1">0</div>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+        <div class="text-xs text-slate-400 font-medium">Skipped</div>
+        <div class="text-2xl font-bold text-slate-400 mt-1">0</div>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+        <div class="text-xs text-slate-400 font-medium">Pass Rate</div>
+        <div class="text-2xl font-bold text-emerald-400 mt-1">100.0%</div>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+        <div class="text-xs text-slate-400 font-medium">Duration</div>
+        <div class="text-2xl font-bold text-cyan-400 mt-1">50.9s</div>
+      </div>
+    </div>
+
+    <!-- Module Analysis -->
+    <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+      <h2 class="text-lg font-semibold text-white mb-4">Module-wise Breakdown</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm text-slate-300">
+          <thead class="text-xs uppercase bg-slate-800/60 text-slate-400 border-b border-slate-700">
+            <tr>
+              <th class="py-3 px-4">Module</th>
+              <th class="py-3 px-4">Total</th>
+              <th class="py-3 px-4">Passed</th>
+              <th class="py-3 px-4">Failed</th>
+              <th class="py-3 px-4">Pass Rate</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800">
+            
+      <tr>
+        <td class="font-medium">Authentication</td>
+        <td>5</td>
+        <td class="text-green-400 font-semibold">5</td>
+        <td class="text-slate-400">0</td>
+        <td>
+          <div class="flex items-center gap-2">
+            <div class="w-24 bg-slate-700 rounded-full h-2">
+              <div class="bg-emerald-500 h-2 rounded-full" style="width: 100.0%"></div>
+            </div>
+            <span class="text-xs text-slate-300">100.0%</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="font-medium">Dashboard</td>
+        <td>4</td>
+        <td class="text-green-400 font-semibold">4</td>
+        <td class="text-slate-400">0</td>
+        <td>
+          <div class="flex items-center gap-2">
+            <div class="w-24 bg-slate-700 rounded-full h-2">
+              <div class="bg-emerald-500 h-2 rounded-full" style="width: 100.0%"></div>
+            </div>
+            <span class="text-xs text-slate-300">100.0%</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="font-medium">Datasets</td>
+        <td>4</td>
+        <td class="text-green-400 font-semibold">4</td>
+        <td class="text-slate-400">0</td>
+        <td>
+          <div class="flex items-center gap-2">
+            <div class="w-24 bg-slate-700 rounded-full h-2">
+              <div class="bg-emerald-500 h-2 rounded-full" style="width: 100.0%"></div>
+            </div>
+            <span class="text-xs text-slate-300">100.0%</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="font-medium">Analysis</td>
+        <td>4</td>
+        <td class="text-green-400 font-semibold">4</td>
+        <td class="text-slate-400">0</td>
+        <td>
+          <div class="flex items-center gap-2">
+            <div class="w-24 bg-slate-700 rounded-full h-2">
+              <div class="bg-emerald-500 h-2 rounded-full" style="width: 100.0%"></div>
+            </div>
+            <span class="text-xs text-slate-300">100.0%</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="font-medium">Transformations</td>
+        <td>7</td>
+        <td class="text-green-400 font-semibold">7</td>
+        <td class="text-slate-400">0</td>
+        <td>
+          <div class="flex items-center gap-2">
+            <div class="w-24 bg-slate-700 rounded-full h-2">
+              <div class="bg-emerald-500 h-2 rounded-full" style="width: 100.0%"></div>
+            </div>
+            <span class="text-xs text-slate-300">100.0%</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="font-medium">Export</td>
+        <td>4</td>
+        <td class="text-green-400 font-semibold">4</td>
+        <td class="text-slate-400">0</td>
+        <td>
+          <div class="flex items-center gap-2">
+            <div class="w-24 bg-slate-700 rounded-full h-2">
+              <div class="bg-emerald-500 h-2 rounded-full" style="width: 100.0%"></div>
+            </div>
+            <span class="text-xs text-slate-300">100.0%</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="font-medium">AI Insights</td>
+        <td>3</td>
+        <td class="text-green-400 font-semibold">3</td>
+        <td class="text-slate-400">0</td>
+        <td>
+          <div class="flex items-center gap-2">
+            <div class="w-24 bg-slate-700 rounded-full h-2">
+              <div class="bg-emerald-500 h-2 rounded-full" style="width: 100.0%"></div>
+            </div>
+            <span class="text-xs text-slate-300">100.0%</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="font-medium">AI Chat</td>
+        <td>4</td>
+        <td class="text-green-400 font-semibold">4</td>
+        <td class="text-slate-400">0</td>
+        <td>
+          <div class="flex items-center gap-2">
+            <div class="w-24 bg-slate-700 rounded-full h-2">
+              <div class="bg-emerald-500 h-2 rounded-full" style="width: 100.0%"></div>
+            </div>
+            <span class="text-xs text-slate-300">100.0%</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="font-medium">Settings</td>
+        <td>3</td>
+        <td class="text-green-400 font-semibold">3</td>
+        <td class="text-slate-400">0</td>
+        <td>
+          <div class="flex items-center gap-2">
+            <div class="w-24 bg-slate-700 rounded-full h-2">
+              <div class="bg-emerald-500 h-2 rounded-full" style="width: 100.0%"></div>
+            </div>
+            <span class="text-xs text-slate-300">100.0%</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="font-medium">Notifications</td>
+        <td>2</td>
+        <td class="text-green-400 font-semibold">2</td>
+        <td class="text-slate-400">0</td>
+        <td>
+          <div class="flex items-center gap-2">
+            <div class="w-24 bg-slate-700 rounded-full h-2">
+              <div class="bg-emerald-500 h-2 rounded-full" style="width: 100.0%"></div>
+            </div>
+            <span class="text-xs text-slate-300">100.0%</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="font-medium">Security</td>
+        <td>3</td>
+        <td class="text-green-400 font-semibold">3</td>
+        <td class="text-slate-400">0</td>
+        <td>
+          <div class="flex items-center gap-2">
+            <div class="w-24 bg-slate-700 rounded-full h-2">
+              <div class="bg-emerald-500 h-2 rounded-full" style="width: 100.0%"></div>
+            </div>
+            <span class="text-xs text-slate-300">100.0%</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="font-medium">Accessibility</td>
+        <td>3</td>
+        <td class="text-green-400 font-semibold">3</td>
+        <td class="text-slate-400">0</td>
+        <td>
+          <div class="flex items-center gap-2">
+            <div class="w-24 bg-slate-700 rounded-full h-2">
+              <div class="bg-emerald-500 h-2 rounded-full" style="width: 100.0%"></div>
+            </div>
+            <span class="text-xs text-slate-300">100.0%</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="font-medium">End-to-End</td>
+        <td>1</td>
+        <td class="text-green-400 font-semibold">1</td>
+        <td class="text-slate-400">0</td>
+        <td>
+          <div class="flex items-center gap-2">
+            <div class="w-24 bg-slate-700 rounded-full h-2">
+              <div class="bg-emerald-500 h-2 rounded-full" style="width: 100.0%"></div>
+            </div>
+            <span class="text-xs text-slate-300">100.0%</span>
+          </div>
+        </td>
+      </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Test Results Table -->
+    <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+      <h2 class="text-lg font-semibold text-white mb-4">Detailed Test Executions</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="text-xs uppercase bg-slate-800/60 text-slate-400 border-b border-slate-700">
+            <tr>
+              <th class="py-3 px-4">ID</th>
+              <th class="py-3 px-4">Module</th>
+              <th class="py-3 px-4">Description</th>
+              <th class="py-3 px-4">Status</th>
+              <th class="py-3 px-4">Duration</th>
+              <th class="py-3 px-4">Evidence</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">AUTH-001</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Authentication</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Login page loads with form inputs</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">987ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/authentication/web_AUTH-001_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">AUTH-002</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Authentication</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Protected route redirects unauthenticated user to /login</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">1081ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/authentication/web_AUTH-002_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">AUTH-003</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Authentication</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Invalid credentials trigger error message or form validation</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">3477ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/authentication/web_AUTH-003_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">AUTH-004</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Authentication</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Authorized session cookie unlocks dashboard access</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">3936ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/authentication/web_AUTH-004_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">AUTH-005</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Authentication</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Clearing session revokes access and redirects to /login</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">1382ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/authentication/web_AUTH-005_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">DASH-001</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Dashboard</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Dashboard page loads successfully with authenticated session</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">2674ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/dashboard/web_DASH-001_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">DASH-002</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Dashboard</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Dashboard renders overview metric cards</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">153ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/dashboard/web_DASH-002_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">DASH-003</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Dashboard</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Primary navigation links to Datasets, Settings, and Chat are present</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">169ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/dashboard/web_DASH-003_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">DASH-004</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Dashboard</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Dashboard handles empty/loaded dataset list gracefully</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">196ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/dashboard/web_DASH-004_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">DATA-001</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Datasets</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Datasets management page loads correctly</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">1791ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/datasets/web_DATA-001_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">DATA-002</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Datasets</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Dataset management UI presents search, upload, or filter actions</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">173ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/datasets/web_DATA-002_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">DATA-003</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Datasets</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Dataset preview table supports client-side pagination structure</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">1451ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/datasets/web_DATA-003_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">DATA-004</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Datasets</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Dataset upload dropzone accepts CSV and XLSX MIME types</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">227ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/datasets/web_DATA-004_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">ANAL-001</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Analysis</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Analysis engine detects missing values and renders completeness rates</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">4017ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/analysis/web_ANAL-001_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">ANAL-002</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Analysis</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Duplicate detection identifies exact and partial row repetitions</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">149ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/analysis/web_ANAL-002_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">ANAL-003</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Analysis</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Outlier detection implements IQR bounds correctly</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">169ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/analysis/web_ANAL-003_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">ANAL-004</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Analysis</td>
+        <td class="py-3 px-4 text-sm text-slate-200">ML readiness score renders composite grade and actionable recommendations</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">193ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/analysis/web_ANAL-004_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">TRAN-001</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Transformations</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Transformation normalization handles drop_column cleanly</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">1577ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/transformations/web_TRAN-001_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">TRAN-002</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Transformations</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Column renaming preserves cell data integrity</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">141ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/transformations/web_TRAN-002_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">TRAN-003</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Transformations</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Duplicate elimination removes duplicate records while preserving singles</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">162ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/transformations/web_TRAN-003_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">TRAN-004</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Transformations</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Missing value imputation supports mean, median, mode, and custom values</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">170ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/transformations/web_TRAN-004_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">TRAN-005</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Transformations</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Outlier capping bounds extreme records to upper/lower fences</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">137ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/transformations/web_TRAN-005_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">TRAN-006</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Transformations</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Data type conversion accurately parses numeric, boolean, date, and text types</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">163ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/transformations/web_TRAN-006_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">TRAN-007</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Transformations</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Rollback restores previous dataset snapshot non-destructively</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">155ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/transformations/web_TRAN-007_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">EXPO-001</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Export</td>
+        <td class="py-3 px-4 text-sm text-slate-200">CSV Export endpoint generates valid CSV with UTF-8 BOM</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">1461ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/export/web_EXPO-001_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">EXPO-002</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Export</td>
+        <td class="py-3 px-4 text-sm text-slate-200">XLSX Export endpoint produces valid Excel binary workbook</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">178ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/export/web_EXPO-002_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">EXPO-003</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Export</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Content-Disposition headers are RFC 5987 compliant with sanitization</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">146ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/export/web_EXPO-003_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">EXPO-004</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Export</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Export endpoint is completely decoupled from transformation pipeline</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">170ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/export/web_EXPO-004_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">AIIN-001</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">AI Insights</td>
+        <td class="py-3 px-4 text-sm text-slate-200">AI Insights endpoint handles dataset context correctly</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">1993ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/ai-insights/web_AIIN-001_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">AIIN-002</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">AI Insights</td>
+        <td class="py-3 px-4 text-sm text-slate-200">AI Insights handles missing API key or quota exhaustion with clear user feedback</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">154ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/ai-insights/web_AIIN-002_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">AIIN-003</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">AI Insights</td>
+        <td class="py-3 px-4 text-sm text-slate-200">AI Insights ensures API keys are never leaked to client responses</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">196ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/ai-insights/web_AIIN-003_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">AICH-001</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">AI Chat</td>
+        <td class="py-3 px-4 text-sm text-slate-200">AI Chat page loads with conversation interface</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">4031ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/ai-chat/web_AICH-001_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">AICH-002</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">AI Chat</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Chat input accepts text and provides message submission control</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">427ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/ai-chat/web_AICH-002_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">AICH-003</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">AI Chat</td>
+        <td class="py-3 px-4 text-sm text-slate-200">AI Guardrails enforce strict domain scope restriction</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">359ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/ai-chat/web_AICH-003_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">AICH-004</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">AI Chat</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Chat rendering uses safe Markdown parser without dangerouslySetInnerHTML</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">402ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/ai-chat/web_AICH-004_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">SETT-001</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Settings</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Settings page loads successfully with configuration tabs</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">2565ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/settings/web_SETT-001_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">SETT-002</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Settings</td>
+        <td class="py-3 px-4 text-sm text-slate-200">API Keys management tab provides credential encryption and preview masking</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">157ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/settings/web_SETT-002_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">SETT-003</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Settings</td>
+        <td class="py-3 px-4 text-sm text-slate-200">AES-256-GCM encryption secures stored credentials</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">159ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/settings/web_SETT-003_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">NOTI-001</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Notifications</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Notification bell icon and drawer controls are present in navigation</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">2421ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/notifications/web_NOTI-001_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">NOTI-002</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Notifications</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Notification drawer supports mark-as-read and dismiss actions</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">151ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/notifications/web_NOTI-002_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">SECU-001</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Security</td>
+        <td class="py-3 px-4 text-sm text-slate-200">HTTP responses enforce X-Frame-Options: DENY to prevent clickjacking</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">2851ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/security/web_SECU-001_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">SECU-002</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Security</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Browser console does NOT leak Supabase service role keys or raw credentials</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">169ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/security/web_SECU-002_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">SECU-003</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Security</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Cross-user dataset access is blocked by Row Level Security (RLS)</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">147ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/security/web_SECU-003_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">ACCE-001</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Accessibility</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Page includes primary semantic landmarks (<main>, <header>)</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">4023ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/accessibility/web_ACCE-001_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">ACCE-002</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Accessibility</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Viewport meta tag is configured for mobile responsiveness</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">160ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/accessibility/web_ACCE-002_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">ACCE-003</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">Accessibility</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Interactive buttons provide accessible labels or icons</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">172ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/accessibility/web_ACCE-003_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+      <tr class="border-b border-slate-800 hover:bg-slate-800/40">
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">E2E-001</td>
+        <td class="py-3 px-4 text-xs font-semibold text-slate-300">End-to-End</td>
+        <td class="py-3 px-4 text-sm text-slate-200">Full Platform Journey: Auth -> Dashboard -> Datasets -> Chat -> Settings</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span></td>
+        <td class="py-3 px-4 font-mono text-xs text-slate-400">3552ms</td>
+        <td class="py-3 px-4"><a href="../../reports/final-testing/screenshots/web/end-to-end/web_E2E-001_PASS.png" target="_blank" class="text-cyan-400 hover:underline text-xs">View Evidence</a></td>
+      </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

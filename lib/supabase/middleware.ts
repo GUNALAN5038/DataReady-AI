@@ -31,9 +31,14 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  const configuredToken = process.env.E2E_TEST_SESSION_TOKEN
   const testSessionCookie = request.cookies.get('dataready-e2e-session')?.value
-  const validTestToken = process.env.E2E_TEST_SESSION_TOKEN || 'dr_authorized_test_session_token_2026'
-  const isTestAuthed = testSessionCookie === validTestToken
+  const isTestAuthed = Boolean(
+    configuredToken &&
+    configuredToken.trim().length > 0 &&
+    testSessionCookie &&
+    testSessionCookie === configuredToken
+  )
 
   const pathname = request.nextUrl.pathname
   const isApiRoute = pathname.startsWith('/api')

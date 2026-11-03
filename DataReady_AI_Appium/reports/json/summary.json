@@ -1,0 +1,139 @@
+{
+  "timestamp": "2026-11-03T14:28:34.306Z",
+  "total": 15,
+  "passed": 15,
+  "failed": 0,
+  "blocked": 0,
+  "skipped": 0,
+  "totalDuration": 39232,
+  "device": {
+    "connected": true,
+    "model": "A142P",
+    "androidVersion": "16",
+    "sdk": "36",
+    "brand": "Nothing",
+    "serial": "00092349L001564"
+  },
+  "tests": [
+    {
+      "id": "AND-LAUNCH-001",
+      "module": "Launch",
+      "description": "Application package com.datareadyai.mobile is installed on device",
+      "status": "PASS",
+      "duration": 722,
+      "screenshot": "reports/final-testing/screenshots/android/launch/android_AND-LAUNCH-001_PASS.png"
+    },
+    {
+      "id": "AND-LAUNCH-002",
+      "module": "Launch",
+      "description": "Main activity (.MainActivity) launches into foreground",
+      "status": "PASS",
+      "duration": 3126,
+      "screenshot": "reports/final-testing/screenshots/android/launch/android_AND-LAUNCH-002_PASS.png"
+    },
+    {
+      "id": "AND-AUTH-001",
+      "module": "Dashboard",
+      "description": "App loads authenticated user profile without redirecting to login",
+      "status": "PASS",
+      "duration": 3076,
+      "screenshot": "reports/final-testing/screenshots/android/dashboard/android_AND-AUTH-001_PASS.png"
+    },
+    {
+      "id": "AND-DASH-001",
+      "module": "Dashboard",
+      "description": "Dashboard displays Total Datasets and analyzed count",
+      "status": "PASS",
+      "duration": 3124,
+      "screenshot": "reports/final-testing/screenshots/android/dashboard/android_AND-DASH-001_PASS.png"
+    },
+    {
+      "id": "AND-DASH-002",
+      "module": "Dashboard",
+      "description": "Dashboard renders Quality Score and ML Readiness metrics",
+      "status": "PASS",
+      "duration": 3112,
+      "screenshot": "reports/final-testing/screenshots/android/dashboard/android_AND-DASH-002_PASS.png"
+    },
+    {
+      "id": "AND-DASH-003",
+      "module": "Dashboard",
+      "description": "Recent datasets list displays dataset name, row count, and file size",
+      "status": "PASS",
+      "duration": 3134,
+      "screenshot": "reports/final-testing/screenshots/android/dashboard/android_AND-DASH-003_PASS.png"
+    },
+    {
+      "id": "AND-DATA-001",
+      "module": "Datasets",
+      "description": "Bottom navigation bar displays all core application tabs",
+      "status": "PASS",
+      "duration": 3081,
+      "screenshot": "reports/final-testing/screenshots/android/datasets/android_AND-DATA-001_PASS.png"
+    },
+    {
+      "id": "AND-DATA-002",
+      "module": "Datasets",
+      "description": "Datasets tab displays tabular metadata and schema",
+      "status": "PASS",
+      "duration": 4412,
+      "screenshot": "reports/final-testing/screenshots/android/datasets/android_AND-DATA-002_PASS.png"
+    },
+    {
+      "id": "AND-AICH-001",
+      "module": "AI Chat",
+      "description": "AI Chat tab opens conversational interface with input controls",
+      "status": "PASS",
+      "duration": 4491,
+      "screenshot": "reports/final-testing/screenshots/android/ai-chat/android_AND-AICH-001_PASS.png"
+    },
+    {
+      "id": "AND-AIIN-001",
+      "module": "AI Insights",
+      "description": "Mobile client communicates with AI insights endpoint securely",
+      "status": "PASS",
+      "duration": 545,
+      "screenshot": "reports/final-testing/screenshots/android/ai-insights/android_AND-AIIN-001_PASS.png"
+    },
+    {
+      "id": "AND-SETT-001",
+      "module": "Settings",
+      "description": "Settings screen displays API Key configuration and dark mode options",
+      "status": "PASS",
+      "duration": 4411,
+      "screenshot": "reports/final-testing/screenshots/android/settings/android_AND-SETT-001_PASS.png"
+    },
+    {
+      "id": "AND-NOTI-001",
+      "module": "Notifications",
+      "description": "Notifications action is available and clickable",
+      "status": "PASS",
+      "duration": 529,
+      "screenshot": "reports/final-testing/screenshots/android/notifications/android_AND-NOTI-001_PASS.png"
+    },
+    {
+      "id": "AND-TRAN-001",
+      "module": "Transformations",
+      "description": "Mobile transformation service supports canonical action normalization",
+      "status": "PASS",
+      "duration": 555,
+      "screenshot": "reports/final-testing/screenshots/android/transformations/android_AND-TRAN-001_PASS.png"
+    },
+    {
+      "id": "AND-EXPO-001",
+      "module": "Export",
+      "description": "Mobile export service downloads CSV and XLSX with Bearer token authentication",
+      "status": "PASS",
+      "duration": 517,
+      "screenshot": "reports/final-testing/screenshots/android/export/android_AND-EXPO-001_PASS.png"
+    },
+    {
+      "id": "AND-NAV-001",
+      "module": "Dashboard",
+      "description": "Tapping Dashboard tab restores primary dashboard view smoothly",
+      "status": "PASS",
+      "duration": 4390,
+      "screenshot": "reports/final-testing/screenshots/android/dashboard/android_AND-NAV-001_PASS.png"
+    }
+  ]
+}

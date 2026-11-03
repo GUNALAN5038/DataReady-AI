@@ -10,14 +10,17 @@ function generateAndroidHtmlReport(testResults, summaryData, deviceInfo, outputP
   const passed = summaryData.passed || testResults.filter(t => t.status === 'PASS').length
   const failed = summaryData.failed || testResults.filter(t => t.status === 'FAIL').length
   const skipped = summaryData.skipped || testResults.filter(t => t.status === 'SKIPPED').length
+  const blocked = summaryData.blocked || testResults.filter(t => t.status === 'BLOCKED').length
   const passRate = total > 0 ? ((passed / total) * 100).toFixed(1) : '0'
 
   const modules = {}
   testResults.forEach(t => {
-    if (!modules[t.module]) modules[t.module] = { total: 0, passed: 0, failed: 0 }
+    if (!modules[t.module]) modules[t.module] = { total: 0, passed: 0, failed: 0, blocked: 0, skipped: 0 }
     modules[t.module].total++
     if (t.status === 'PASS') modules[t.module].passed++
     if (t.status === 'FAIL') modules[t.module].failed++
+    if (t.status === 'BLOCKED') modules[t.module].blocked++
+    if (t.status === 'SKIPPED') modules[t.module].skipped++
   })
 
   const moduleRowsHtml = Object.entries(modules)
@@ -43,14 +46,20 @@ function generateAndroidHtmlReport(testResults, summaryData, deviceInfo, outputP
 
   const testRowsHtml = testResults
     .map(t => {
-      const isPass = t.status === 'PASS'
-      const statusBadge = isPass
-        ? '<span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span>'
-        : '<span class="px-2 py-1 text-xs rounded bg-red-950 text-red-400 border border-red-800">FAIL</span>'
+      let statusBadge = '<span class="px-2 py-1 text-xs rounded bg-slate-800 text-slate-300">UNKNOWN</span>'
+      if (t.status === 'PASS') {
+        statusBadge = '<span class="px-2 py-1 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span>'
+      } else if (t.status === 'FAIL') {
+        statusBadge = '<span class="px-2 py-1 text-xs rounded bg-red-950 text-red-400 border border-red-800">FAIL</span>'
+      } else if (t.status === 'BLOCKED') {
+        statusBadge = '<span class="px-2 py-1 text-xs rounded bg-amber-950 text-amber-400 border border-amber-800">BLOCKED</span>'
+      } else if (t.status === 'SKIPPED') {
+        statusBadge = '<span class="px-2 py-1 text-xs rounded bg-slate-900 text-slate-400 border border-slate-700">SKIPPED</span>'
+      }
 
       const screenshotLink = t.screenshot
         ? `<a href="../../${t.screenshot}" target="_blank" class="text-emerald-400 hover:underline text-xs">View Evidence</a>`
-        : '<span class="text-slate-500 text-xs">—</span>'
+        : (t.error || t.reason ? `<span class="text-amber-400 text-xs">${t.error || t.reason}</span>` : '<span class="text-slate-500 text-xs">—</span>')
 
       return `
       <tr class="border-b border-slate-800 hover:bg-slate-800/40">
@@ -81,10 +90,10 @@ function generateAndroidHtmlReport(testResults, summaryData, deviceInfo, outputP
           <span class="p-2 bg-emerald-600 rounded-lg text-white">📱</span>
           DataReady AI — Android Appium Automation Report
         </h1>
-        <p class="text-slate-400 mt-1">Physical Device Execution on ${deviceInfo.brand || 'Android'} ${deviceInfo.model || 'Device'} (Android ${deviceInfo.androidVersion || '14'})</p>
+        <p class="text-slate-400 mt-1">Physical Device / Emulator Execution on ${deviceInfo.brand || 'Android'} ${deviceInfo.model || 'Device'} (Android ${deviceInfo.androidVersion || '14'})</p>
       </div>
       <div class="text-right text-xs text-slate-400 font-mono">
-        <div>Device: <span class="text-emerald-400">${deviceInfo.serial || '00092349L001564'}</span></div>
+        <div>Device: <span class="text-emerald-400">${deviceInfo.serial || 'Detected Device'}</span></div>
         <div>Package: <span class="text-emerald-400">com.datareadyai.mobile</span></div>
         <div>Date: ${new Date().toISOString()}</div>
       </div>
@@ -105,8 +114,8 @@ function generateAndroidHtmlReport(testResults, summaryData, deviceInfo, outputP
         <div class="text-2xl font-bold ${failed > 0 ? 'text-red-400' : 'text-slate-400'} mt-1">${failed}</div>
       </div>
       <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
-        <div class="text-xs text-slate-400 font-medium">Skipped</div>
-        <div class="text-2xl font-bold text-slate-400 mt-1">${skipped}</div>
+        <div class="text-xs text-slate-400 font-medium">Blocked/Skipped</div>
+        <div class="text-2xl font-bold ${blocked > 0 ? 'text-amber-400' : 'text-slate-400'} mt-1">${blocked + skipped}</div>
       </div>
       <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
         <div class="text-xs text-slate-400 font-medium">Pass Rate</div>

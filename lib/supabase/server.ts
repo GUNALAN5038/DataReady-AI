@@ -79,20 +79,23 @@ export async function createClient(req?: Request) {
  */
 export const getAuthenticatedUser = cache(async () => {
   try {
-    const cookieStore = await cookies()
-    const testCookie = cookieStore.get('dataready-e2e-session')?.value
-    const validTestToken = process.env.E2E_TEST_SESSION_TOKEN || 'dr_authorized_test_session_token_2026'
+    const configuredToken = process.env.E2E_TEST_SESSION_TOKEN
 
-    if (testCookie && testCookie === validTestToken) {
-      return {
-        id: process.env.TEST_USER_ID || '118030e0-857d-49ae-ad68-7730ec58d45a',
-        email: 'authorized_test_user@dataready.ai',
-        user_metadata: { full_name: 'Authorized Test User' },
-        role: 'authenticated',
-        aud: 'authenticated',
-        app_metadata: { provider: 'email' },
-        created_at: '2026-11-02T00:00:00.000Z',
-      } as any
+    if (configuredToken && configuredToken.trim().length > 0) {
+      const cookieStore = await cookies()
+      const testCookie = cookieStore.get('dataready-e2e-session')?.value
+
+      if (testCookie && testCookie === configuredToken) {
+        return {
+          id: process.env.TEST_USER_ID || '118030e0-857d-49ae-ad68-7730ec58d45a',
+          email: 'authorized_test_user@dataready.ai',
+          user_metadata: { full_name: 'Authorized Test User' },
+          role: 'authenticated',
+          aud: 'authenticated',
+          app_metadata: { provider: 'email' },
+          created_at: '2026-11-02T00:00:00.000Z',
+        } as any
+      }
     }
   } catch {
     // Outside request context

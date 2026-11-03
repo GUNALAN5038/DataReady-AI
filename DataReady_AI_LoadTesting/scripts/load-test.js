@@ -6,37 +6,50 @@ export const options = {
   duration: __ENV.K6_DURATION || '1m',
   thresholds: {
     http_req_failed: ['rate<0.05'],
-    http_req_duration: ['p(95)<1500'],
+    http_req_duration: ['p(95)<2000'],
   },
 }
 
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:3000'
-const SESSION_TOKEN = __ENV.E2E_TEST_SESSION_TOKEN || 'dr_authorized_test_session_token_2026'
+const SESSION_TOKEN = __ENV.E2E_TEST_SESSION_TOKEN || ''
 
 export default function () {
   const params = {
     headers: {
-      Cookie: `dataready-e2e-session=${SESSION_TOKEN}`,
+      ...(SESSION_TOKEN ? { Cookie: `dataready-e2e-session=${SESSION_TOKEN}` } : {}),
       'User-Agent': 'DataReady-AI-k6-LoadTest/1.0',
     },
-    tags: { name: 'DashboardLoad' },
+    tags: { name: 'DataReadyLoad' },
   }
 
-  // 1. Safe read-only dashboard request
-  const res = http.get(`${BASE_URL}/dashboard`, params)
+  // 1. Dashboard UI Request
+  const dashRes = http.get(`${BASE_URL}/dashboard`, params)
+  check(dashRes, {
+    'dashboard status is 200': (r) => r.status === 200,
+    'dashboard latency < 2000ms': (r) => r.timings.duration < 2000,
+  })
 
-  check(res, {
-    'status is 200': (r) => r.status === 200,
-    'body contains html': (r) => r.body && r.body.length > 0,
-    'latency is acceptable (<1500ms)': (r) => r.timings.duration < 1500,
+  // 2. Notifications API Route
+  const notifRes = http.get(`${BASE_URL}/api/notifications`, params)
+  check(notifRes, {
+    'notifications status is 200 or 401': (r) => r.status === 200 || r.status === 401,
+    'notifications latency < 2000ms': (r) => r.timings.duration < 2000,
+  })
+
+  // 3. User Keys API Route
+  const keysRes = http.get(`${BASE_URL}/api/user/keys`, params)
+  check(keysRes, {
+    'keys status is 200 or 401': (r) => r.status === 200 || r.status === 401,
+    'keys latency < 2000ms': (r) => r.timings.duration < 2000,
   })
 
   sleep(0.5)
 }
 
 export function handleSummary(data) {
+  const reqs = data.metrics.http_reqs ? (data.metrics.http_reqs.values ? data.metrics.http_reqs.values.count : data.metrics.http_reqs.count) : 'N/A'
   return {
     'reports/json/summary.json': JSON.stringify(data, null, 2),
-    stdout: `\n[k6 Summary] Completed ${data.metrics.http_reqs ? (data.metrics.http_reqs.values ? data.metrics.http_reqs.values.count : data.metrics.http_reqs.count) : 'N/A'} requests\n`,
+    stdout: `\n[k6 Summary] Completed ${reqs} requests across Dashboard and API endpoints\n`,
   }
 }

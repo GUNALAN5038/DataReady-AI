@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getAuthenticatedUser } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
@@ -7,10 +7,10 @@ export const dynamic = 'force-dynamic'
  * GET /api/chat/conversations
  * Returns all chat conversations belonging to the authenticated user.
  */
-export async function GET() {
+export async function GET(req?: Request) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const supabase = await createClient(req)
+    const user = (await getAuthenticatedUser()) || (await supabase.auth.getUser()).data?.user
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -43,8 +43,8 @@ export async function GET() {
  */
 export async function POST(req: Request) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const supabase = await createClient(req)
+    const user = (await getAuthenticatedUser()) || (await supabase.auth.getUser()).data?.user
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

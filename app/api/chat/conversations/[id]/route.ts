@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getAuthenticatedUser } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
@@ -13,8 +13,8 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const supabase = await createClient(req)
+    const user = (await getAuthenticatedUser()) || (await supabase.auth.getUser()).data?.user
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -68,8 +68,8 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const supabase = await createClient(req)
+    const user = (await getAuthenticatedUser()) || (await supabase.auth.getUser()).data?.user
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

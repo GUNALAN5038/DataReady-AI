@@ -34,6 +34,11 @@ async function generateAndroidExcelReport(testResults, summaryData, deviceInfo, 
     pattern: 'solid',
     fgColor: { argb: 'FFFEE2E2' }, // Soft red
   }
+  const blockedFill = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: 'FFFEF3C7' }, // Soft amber
+  }
 
   // 1. Executive Summary
   const summarySheet = workbook.addWorksheet('Executive Summary', { views: [{ showGridLines: true }] })
@@ -48,43 +53,37 @@ async function generateAndroidExcelReport(testResults, summaryData, deviceInfo, 
   const passed = summaryData.passed || testResults.filter(t => t.status === 'PASS').length
   const failed = summaryData.failed || testResults.filter(t => t.status === 'FAIL').length
   const skipped = summaryData.skipped || testResults.filter(t => t.status === 'SKIPPED').length
+  const blocked = summaryData.blocked || testResults.filter(t => t.status === 'BLOCKED').length
   const passRate = total > 0 ? ((passed / total) * 100).toFixed(2) + '%' : '0.00%'
 
   const summaryRows = [
     { metric: 'Project Name', value: 'DataReady AI (Android Mobile App E2E)' },
     { metric: 'Target Android Package', value: 'com.datareadyai.mobile' },
     { metric: 'Device Model', value: `${deviceInfo.brand || 'Android'} ${deviceInfo.model || 'Device'}` },
-    { metric: 'Device UDID / Serial', value: deviceInfo.serial || '00092349L001564' },
+    { metric: 'Device UDID / Serial', value: deviceInfo.serial || 'Detected Device' },
     { metric: 'Android OS Version', value: `Android ${deviceInfo.androidVersion || '14'} (SDK ${deviceInfo.sdk || '34'})` },
-    { metric: 'Automation Engine', value: 'Appium 3.9 / UiAutomator2 8.7' },
+    { metric: 'Automation Engine', value: 'Appium 2.x / UiAutomator2 / WebdriverIO' },
     { metric: 'Execution Timestamp', value: new Date().toISOString() },
     { metric: 'Total Tests Executed', value: total },
     { metric: 'Tests Passed', value: passed },
     { metric: 'Tests Failed', value: failed },
-    { metric: 'Tests Skipped / Blocked', value: skipped },
+    { metric: 'Tests Blocked / Skipped', value: blocked + skipped },
     { metric: 'Pass Rate (%)', value: passRate },
-    { metric: 'Total Execution Duration', value: `${(summaryData.totalDuration / 1000).toFixed(2)}s` },
-    { metric: 'Screenshot Evidence Count', value: testResults.filter(t => t.screenshot).length },
+    { metric: 'Total Execution Duration (ms)', value: summaryData.totalDuration || 0 },
   ]
 
-  summaryRows.forEach(r => {
-    const row = summarySheet.addRow(r)
-    row.getCell(1).font = { bold: true }
-    if (r.metric === 'Pass Rate (%)') {
-      row.getCell(2).font = { bold: true, color: { argb: 'FF16A34A' } }
-    }
-  })
+  summaryRows.forEach(r => summarySheet.addRow(r))
 
-  // 2. Complete Test Results
-  const resultsSheet = workbook.addWorksheet('Complete Test Results', { views: [{ showGridLines: true }] })
+  // 2. Test Execution Details
+  const resultsSheet = workbook.addWorksheet('Test Results', { views: [{ showGridLines: true }] })
   resultsSheet.columns = [
-    { header: 'Test ID', key: 'id', width: 15 },
-    { header: 'Module', key: 'module', width: 20 },
-    { header: 'Test Description', key: 'description', width: 45 },
-    { header: 'Status', key: 'status', width: 12 },
-    { header: 'Duration (ms)', key: 'duration', width: 15 },
-    { header: 'Screenshot Evidence', key: 'screenshot', width: 45 },
-    { header: 'Error Details', key: 'error', width: 50 },
+    { header: 'Test ID', key: 'id', width: 18 },
+    { header: 'Module', key: 'module', width: 18 },
+    { header: 'Description', key: 'description', width: 55 },
+    { header: 'Status', key: 'status', width: 14 },
+    { header: 'Duration (ms)', key: 'duration', width: 16 },
+    { header: 'Screenshot / Evidence', key: 'screenshot', width: 45 },
+    { header: 'Error Details', key: 'error', width: 35 },
   ]
   resultsSheet.getRow(1).font = headerFont
   resultsSheet.getRow(1).fill = headerFill
@@ -107,6 +106,9 @@ async function generateAndroidExcelReport(testResults, summaryData, deviceInfo, 
     } else if (t.status === 'FAIL') {
       statusCell.fill = failFill
       statusCell.font = { color: { argb: 'FFDC2626' }, bold: true }
+    } else if (t.status === 'BLOCKED') {
+      statusCell.fill = blockedFill
+      statusCell.font = { color: { argb: 'FFD97706' }, bold: true }
     }
   })
 
@@ -184,12 +186,10 @@ async function generateAndroidExcelReport(testResults, summaryData, deviceInfo, 
   devSheet.getRow(1).fill = headerFill
 
   devSheet.addRow({ property: 'Device Manufacturer / Brand', details: deviceInfo.brand || 'Android' })
-  devSheet.addRow({ property: 'Product Model', details: deviceInfo.model || 'PacmanProIND' })
-  devSheet.addRow({ property: 'Serial Number / UDID', details: deviceInfo.serial || '00092349L001564' })
+  devSheet.addRow({ property: 'Product Model', details: deviceInfo.model || 'Device' })
+  devSheet.addRow({ property: 'Serial Number / UDID', details: deviceInfo.serial || 'Detected Device' })
   devSheet.addRow({ property: 'Android Version', details: deviceInfo.androidVersion || '14' })
   devSheet.addRow({ property: 'API Level (SDK)', details: deviceInfo.sdk || '34' })
-  devSheet.addRow({ property: 'Screen Density & Bounds', details: '1084 x 2412 px (Physical Display)' })
-  devSheet.addRow({ property: 'Reverse TCP Ports', details: 'tcp:3000 -> tcp:3000, tcp:8081 -> tcp:8081' })
 
   // 6. Execution Performance
   const perfSheet = workbook.addWorksheet('Execution Performance', { views: [{ showGridLines: true }] })

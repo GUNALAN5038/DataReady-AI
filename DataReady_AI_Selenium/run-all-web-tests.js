@@ -123,18 +123,35 @@ async function runAllWebTests() {
     total,
     passed,
     failed,
+    blocked: 0,
     skipped: 0,
     totalDuration,
     baseUrl,
   }
 
-  // 1. Generate local Excel & HTML reports
+  // 1. Machine-readable JSON summaries
+  const localJsonPath = path.join(SELENIUM_DIR, 'reports/json/summary.json')
+  const masterJsonPath = path.join(ROOT_DIR, 'reports/final-testing/web-summary.json')
+  fs.mkdirSync(path.dirname(localJsonPath), { recursive: true })
+  fs.mkdirSync(path.dirname(masterJsonPath), { recursive: true })
+
+  const jsonPayload = JSON.stringify({
+    timestamp: new Date().toISOString(),
+    ...summaryData,
+    tests: testResults,
+  }, null, 2)
+
+  fs.writeFileSync(localJsonPath, jsonPayload, 'utf8')
+  fs.writeFileSync(masterJsonPath, jsonPayload, 'utf8')
+  console.log(`[Web Runner] JSON summary saved to: ${localJsonPath}`)
+
+  // 2. Generate local Excel & HTML reports
   const localExcelPath = path.join(SELENIUM_DIR, 'reports/excel/DataReadyAI_Web_E2E_Report.xlsx')
   const localHtmlPath = path.join(SELENIUM_DIR, 'reports/html/index.html')
   await generateWebExcelReport(testResults, summaryData, localExcelPath)
   generateWebHtmlReport(testResults, summaryData, localHtmlPath)
 
-  // 2. Copy/Generate to master final-testing report locations
+  // 3. Copy/Generate to master final-testing report locations
   const masterExcelPath = path.join(ROOT_DIR, 'reports/final-testing/DataReadyAI_Web_E2E_Report.xlsx')
   const masterHtmlPath = path.join(ROOT_DIR, 'reports/final-testing/web-e2e.html')
   await generateWebExcelReport(testResults, summaryData, masterExcelPath)

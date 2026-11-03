@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getAuthenticatedUser } from '@/lib/supabase/server'
 import { getAIProvider } from '@/lib/ai/provider'
 import { classifyAIError, executeWithSafeRetry } from '@/lib/ai/errors'
 import { generateText, generateObject } from 'ai'
@@ -299,7 +299,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   
   try {
     const supabase = await createClient(request)
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = (await getAuthenticatedUser()) || (await supabase.auth.getUser()).data?.user
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized: Please log in.' }, { status: 401 })

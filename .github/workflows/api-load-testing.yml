@@ -22,7 +22,7 @@ jobs:
 
       - name: Install Load Testing Dependencies
         working-directory: DataReady_AI_LoadTesting
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: Setup k6
         uses: grafana/setup-k6-action@v1
@@ -33,7 +33,7 @@ jobs:
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.placeholder' }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.placeholder' }}
           API_KEY_ENCRYPTION_KEY: ${{ secrets.API_KEY_ENCRYPTION_KEY || 'dr_test_encryption_key_32_characters_long!' }}
-          E2E_TEST_SESSION_TOKEN: dr_authorized_test_session_token_2026
+          E2E_TEST_SESSION_TOKEN: ${{ secrets.E2E_TEST_SESSION_TOKEN || 'dr_ci_session_token_authorized_2026' }}
         run: |
           npm ci
           npm run build
@@ -46,6 +46,7 @@ jobs:
           K6_VUS: 100
           K6_DURATION: 1m
           BASE_URL: http://localhost:3000
+          E2E_TEST_SESSION_TOKEN: ${{ secrets.E2E_TEST_SESSION_TOKEN || 'dr_ci_session_token_authorized_2026' }}
         run: node scripts/run-load-test.js
 
       - name: Upload Load Testing Reports
@@ -54,16 +55,12 @@ jobs:
         with:
           name: api-load-testing-reports
           path: |
-            DataReady_AI_LoadTesting/reports/excel/
-            DataReady_AI_LoadTesting/reports/html/
-            DataReady_AI_LoadTesting/reports/json/
+            DataReady_AI_LoadTesting/reports/
             reports/final-testing/DataReadyAI_Load_Test_Report.xlsx
             reports/final-testing/load-testing.html
+            reports/final-testing/load-summary.json
 
       - name: Generate GitHub Step Summary
         if: always()
         run: |
-          echo "### ⚡ API Baseline & Load Testing Results" >> $GITHUB_STEP_SUMMARY
-          echo "- **Engine:** Grafana k6" >> $GITHUB_STEP_SUMMARY
-          echo "- **Concurrency:** 100 VUs (1m duration)" >> $GITHUB_STEP_SUMMARY
-          echo "- **Artifacts Uploaded:** Excel report, HTML report, raw JSON summary" >> $GITHUB_STEP_SUMMARY
+          node scripts/consolidate-testing-summary.js

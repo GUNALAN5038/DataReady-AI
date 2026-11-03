@@ -5,15 +5,20 @@
 const { execSync } = require('child_process')
 const fs = require('fs')
 const path = require('path')
-const { ADB_PATH } = require('../config/capabilities')
+const { ADB_PATH, getConnectedDevice } = require('../config/capabilities')
 
 const APPIUM_DIR = path.resolve(__dirname, '../')
 const ROOT_DIR = path.resolve(__dirname, '../../')
-const DEVICE_ID = '00092349L001564'
+
+function getActiveDevice() {
+  return getConnectedDevice(ADB_PATH)
+}
 
 function execAdb(cmd, timeoutMs = 15000) {
+  const device = getActiveDevice()
+  const targetArg = device ? `-s ${device}` : ''
   try {
-    const fullCmd = `"${ADB_PATH}" -s ${DEVICE_ID} ${cmd}`
+    const fullCmd = `"${ADB_PATH}" ${targetArg} ${cmd}`
     return execSync(fullCmd, { encoding: 'utf8', timeout: timeoutMs, stdio: ['pipe', 'pipe', 'pipe'] }).trim()
   } catch (err) {
     throw new Error(`ADB command failed: ${cmd} - ${err.message}`)
@@ -21,36 +26,46 @@ function execAdb(cmd, timeoutMs = 15000) {
 }
 
 function checkDeviceConnected() {
-  try {
-    const out = execSync(`"${ADB_PATH}" devices`, { encoding: 'utf8' })
-    return out.includes(DEVICE_ID)
-  } catch {
-    return false
-  }
+  const device = getActiveDevice()
+  return Boolean(device)
 }
 
 function getDeviceInfo() {
-  if (!checkDeviceConnected()) {
+  const device = getActiveDevice()
+  if (!device) {
     return {
       connected: false,
       model: 'N/A',
       androidVersion: 'N/A',
-      serial: DEVICE_ID,
+      sdk: 'N/A',
+      brand: 'N/A',
+      serial: 'None',
     }
   }
 
-  const model = execAdb('shell getprop ro.product.model') || 'PacmanProIND (A142P)'
-  const androidVersion = execAdb('shell getprop ro.build.version.release') || '14'
-  const sdk = execAdb('shell getprop ro.build.version.sdk') || '34'
-  const brand = execAdb('shell getprop ro.product.brand') || 'Android'
+  try {
+    const model = execAdb('shell getprop ro.product.model') || 'PacmanProIND (A142P)'
+    const androidVersion = execAdb('shell getprop ro.build.version.release') || '14'
+    const sdk = execAdb('shell getprop ro.build.version.sdk') || '34'
+    const brand = execAdb('shell getprop ro.product.brand') || 'Android'
 
-  return {
-    connected: true,
-    model,
-    androidVersion,
-    sdk,
-    brand,
-    serial: DEVICE_ID,
+    return {
+      connected: true,
+      model,
+      androidVersion,
+      sdk,
+      brand,
+      serial: device,
+    }
+  } catch {
+    return {
+      connected: true,
+      model: 'Android Device',
+      androidVersion: '14',
+      sdk: '34',
+      brand: 'Android',
+      serial: device,
+    }
   }
 }
 
@@ -58,7 +73,9 @@ function dumpUiHierarchy() {
   execAdb('shell uiautomator dump /sdcard/appium_dump.xml')
   const localTemp = path.join(APPIUM_DIR, 'reports/logs/ui_dump.xml')
   fs.mkdirSync(path.dirname(localTemp), { recursive: true })
-  execSync(`"${ADB_PATH}" -s ${DEVICE_ID} pull /sdcard/appium_dump.xml "${localTemp}"`, { stdio: ['pipe', 'pipe', 'pipe'] })
+  const device = getActiveDevice()
+  const targetArg = device ? `-s ${device}` : ''
+  execSync(`"${ADB_PATH}" ${targetArg} pull /sdcard/appium_dump.xml "${localTemp}"`, { stdio: ['pipe', 'pipe', 'pipe'] })
   return fs.readFileSync(localTemp, 'utf8')
 }
 
@@ -84,6 +101,25 @@ function parseUiElements(xmlContent) {
   return elements
 }
 
+function getElementByTextOrDesc(targetText) {
+  const xml = dumpUiHierarchy()
+  const elements = parseUiElements(xml)
+  const lower = targetText.toLowerCase()
+  return elements.find(e =>
+    (e.text && e.text.toLowerCase().includes(lower)) ||
+    (e.contentDesc && e.contentDesc.toLowerCase().includes(lower))
+  )
+}
+
+function tapElementByTextOrDesc(targetText) {
+  const el = getElementByTextOrDesc(targetText)
+  if (!el) {
+    throw new Error(`Element matching "${targetText}" not found in active screen UI hierarchy`)
+  }
+  tapCoordinate(el.bounds.centerX, el.bounds.centerY)
+  return el
+}
+
 function captureAndroidPassScreenshot(testId, category) {
   try {
     const filename = `android_${testId}_PASS.png`
@@ -96,7 +132,9 @@ function captureAndroidPassScreenshot(testId, category) {
     const localPath = path.join(localDir, filename)
     const masterPath = path.join(masterDir, filename)
 
-    execSync(`"${ADB_PATH}" -s ${DEVICE_ID} exec-out screencap -p > "${localPath}"`, { stdio: ['pipe', 'pipe', 'pipe'] })
+    const device = getActiveDevice()
+    const targetArg = device ? `-s ${device}` : ''
+    execSync(`"${ADB_PATH}" ${targetArg} exec-out screencap -p > "${localPath}"`, { stdio: ['pipe', 'pipe', 'pipe'] })
     if (fs.existsSync(localPath)) {
       fs.copyFileSync(localPath, masterPath)
       return `reports/final-testing/screenshots/android/${category}/${filename}`
@@ -126,6 +164,8 @@ module.exports = {
   getDeviceInfo,
   dumpUiHierarchy,
   parseUiElements,
+  getElementByTextOrDesc,
+  tapElementByTextOrDesc,
   captureAndroidPassScreenshot,
   tapCoordinate,
   pressBackButton,

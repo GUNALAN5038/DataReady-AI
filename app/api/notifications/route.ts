@@ -1,13 +1,13 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getAuthenticatedUser } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { createNotification, NotificationRecord } from '@/lib/notifications'
 
 export async function GET(request: Request) {
   try {
     const supabase = await createClient(request)
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const user = (await getAuthenticatedUser()) || (await supabase.auth.getUser()).data?.user
 
-    if (authError || !user) {
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 })
     }
 
@@ -43,9 +43,9 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const supabase = await createClient(request)
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const user = (await getAuthenticatedUser()) || (await supabase.auth.getUser()).data?.user
 
-    if (authError || !user) {
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 })
     }
 

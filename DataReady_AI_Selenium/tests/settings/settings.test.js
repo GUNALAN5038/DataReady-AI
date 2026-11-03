@@ -18,15 +18,23 @@ async function runSettingsTests(driver, baseUrl, recordResult) {
     await capturePassScreenshot(driver, 'SETT-001', 'settings')
   })
 
-  await recordResult('SETT-002', 'Settings', 'API Keys management tab provides credential encryption and preview masking', async () => {
+  await recordResult('SETT-002', 'Settings', 'API Keys management tab provides credential configuration controls', async () => {
     const pageSource = await driver.getPageSource()
     const hasKeysTab = pageSource.includes('API') || pageSource.includes('Key') || pageSource.includes('Provider') || pageSource.includes('Settings')
     assert(hasKeysTab, 'API Key configuration controls present')
     await capturePassScreenshot(driver, 'SETT-002', 'settings')
   })
 
-  await recordResult('SETT-003', 'Settings', 'AES-256-GCM encryption secures stored credentials', async () => {
-    assert(true, 'AES-256-GCM encryption and IV validation confirmed')
+  await recordResult('SETT-003', 'Settings', 'User keys API responds safely and never reveals raw server environment secrets', async () => {
+    const res = await driver.executeAsyncScript((baseUrl, done) => {
+      fetch(`${baseUrl}/api/user/keys`)
+        .then(r => r.json().then(data => done({ status: r.status, data })).catch(() => done({ status: r.status })))
+        .catch(err => done({ error: err.message }))
+    }, baseUrl)
+
+    assert(res.status === 200 || res.status === 401 || res.status === 500, `Keys endpoint returned status: ${res.status}`)
+    const payload = JSON.stringify(res.data || {})
+    assert(!payload.includes('AIzaSy'), 'Must not leak raw server Gemini API key')
     await capturePassScreenshot(driver, 'SETT-003', 'settings')
   })
 }

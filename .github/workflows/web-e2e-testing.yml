@@ -28,7 +28,7 @@ jobs:
 
       - name: Install Selenium Project Dependencies
         working-directory: DataReady_AI_Selenium
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: Start Next.js Application Server
         env:
@@ -36,7 +36,7 @@ jobs:
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.placeholder' }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.placeholder' }}
           API_KEY_ENCRYPTION_KEY: ${{ secrets.API_KEY_ENCRYPTION_KEY || 'dr_test_encryption_key_32_characters_long!' }}
-          E2E_TEST_SESSION_TOKEN: dr_authorized_test_session_token_2026
+          E2E_TEST_SESSION_TOKEN: ${{ secrets.E2E_TEST_SESSION_TOKEN || 'dr_ci_session_token_authorized_2026' }}
         run: |
           npm run build
           npm run start &
@@ -44,6 +44,9 @@ jobs:
 
       - name: Execute Selenium E2E Suite
         working-directory: DataReady_AI_Selenium
+        env:
+          BASE_URL: http://localhost:3000
+          E2E_TEST_SESSION_TOKEN: ${{ secrets.E2E_TEST_SESSION_TOKEN || 'dr_ci_session_token_authorized_2026' }}
         run: node run-all-web-tests.js
 
       - name: Upload Web Test Reports
@@ -52,17 +55,13 @@ jobs:
         with:
           name: web-e2e-reports
           path: |
-            DataReady_AI_Selenium/reports/excel/
-            DataReady_AI_Selenium/reports/html/
-            DataReady_AI_Selenium/reports/screenshots/
+            DataReady_AI_Selenium/reports/
             reports/final-testing/DataReadyAI_Web_E2E_Report.xlsx
             reports/final-testing/web-e2e.html
+            reports/final-testing/web-summary.json
             reports/final-testing/screenshots/web/
 
       - name: Generate GitHub Step Summary
         if: always()
         run: |
-          echo "### 🌐 Web E2E Automation Results" >> $GITHUB_STEP_SUMMARY
-          echo "- **Framework:** Selenium WebDriver + Chrome" >> $GITHUB_STEP_SUMMARY
-          echo "- **Status:** Completed" >> $GITHUB_STEP_SUMMARY
-          echo "- **Artifacts Uploaded:** Excel report, HTML report, screenshots" >> $GITHUB_STEP_SUMMARY
+          node scripts/consolidate-testing-summary.js

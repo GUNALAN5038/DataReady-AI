@@ -24,20 +24,21 @@ jobs:
         working-directory: DataReady_AI_LoadTesting
         run: npm install
 
-      - name: Install k6
-        run: |
-          sudo gpg -k
-          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
-          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
-          sudo apt-get update
-          sudo apt-get install k6
+      - name: Setup k6
+        uses: grafana/setup-k6-action@v1
 
       - name: Start Next.js Server
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.placeholder' }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.placeholder' }}
+          API_KEY_ENCRYPTION_KEY: ${{ secrets.API_KEY_ENCRYPTION_KEY || 'dr_test_encryption_key_32_characters_long!' }}
+          E2E_TEST_SESSION_TOKEN: dr_authorized_test_session_token_2026
         run: |
           npm ci
           npm run build
           npm run start &
-          npx wait-on http://localhost:3000 --timeout 60000
+          npx wait-on tcp:3000 --timeout 60000
 
       - name: Execute k6 Load Test
         working-directory: DataReady_AI_LoadTesting

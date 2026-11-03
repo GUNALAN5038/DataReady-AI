@@ -32,11 +32,15 @@ jobs:
 
       - name: Start Next.js Application Server
         env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.placeholder' }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.placeholder' }}
+          API_KEY_ENCRYPTION_KEY: ${{ secrets.API_KEY_ENCRYPTION_KEY || 'dr_test_encryption_key_32_characters_long!' }}
           E2E_TEST_SESSION_TOKEN: dr_authorized_test_session_token_2026
         run: |
           npm run build
           npm run start &
-          npx wait-on http://localhost:3000 --timeout 60000
+          npx wait-on tcp:3000 --timeout 60000
 
       - name: Execute Selenium E2E Suite
         working-directory: DataReady_AI_Selenium

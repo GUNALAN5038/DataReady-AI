@@ -30,5 +30,12 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "mobile",
+    "DataReady_AI_Appium",
+    "DataReady_AI_Selenium",
+    "DataReady_AI_LoadTesting",
+    "testing"
+  ]
 }

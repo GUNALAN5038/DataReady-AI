@@ -1,9 +1,9 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getAuthenticatedUser } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import * as Papa from 'papaparse'
 import * as XLSX from 'xlsx'
-import { applyTransformations } from '@/lib/analysis/transformations'
-import { TransformationRequest } from '@/types/transformations'
+import { applyTransformations, normalizeTransformation } from '@/lib/analysis/transformations'
+import { TransformationRequest, DatasetTransformation } from '@/types/transformations'
 import { inferColumnTypes } from '@/lib/analysis/data-types'
 import { analyzeMissingValues } from '@/lib/analysis/missing-values'
 import { calculateStatistics } from '@/lib/analysis/statistics'
@@ -11,24 +11,47 @@ import { detectDuplicates } from '@/lib/analysis/duplicates'
 import { detectOutliers } from '@/lib/analysis/outliers'
 import { calculateMLReadiness } from '@/lib/analysis/ml-readiness'
 import { generateRecommendations } from '@/lib/analysis/recommendations'
+import { createNotification } from '@/lib/notifications'
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const supabase = await createClient()
+  const supabase = await createClient(request)
 
   // 1. Authenticate user
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = (await getAuthenticatedUser()) || (await supabase.auth.getUser()).data?.user
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized: Please log in to transform this dataset.' }, { status: 401 })
   }
 
   try {
-    const body = await request.json().catch(() => null) as TransformationRequest | null
-    if (!body || !body.transformations || !Array.isArray(body.transformations) || body.transformations.length === 0) {
+    const body = await request.json().catch(() => null)
+    let rawTransformations: unknown[] = []
+
+    if (body) {
+      if (Array.isArray(body)) {
+        rawTransformations = body
+      } else if (Array.isArray(body.transformations)) {
+        rawTransformations = body.transformations
+      } else if (body.transformation && typeof body.transformation === 'object') {
+        rawTransformations = [body.transformation]
+      } else if (body.action || body.type) {
+        rawTransformations = [body]
+      }
+    }
+
+    if (rawTransformations.length === 0) {
       return NextResponse.json({ error: 'No valid transformations provided in request body.' }, { status: 400 })
     }
 
-    const { transformations } = body
+    let transformations: DatasetTransformation[] = []
+    try {
+      transformations = rawTransformations.map(normalizeTransformation)
+    } catch (normErr: unknown) {
+      return NextResponse.json(
+        { error: normErr instanceof Error ? normErr.message : 'Invalid transformation request.' },
+        { status: 400 }
+      )
+    }
 
     // 2. Fetch current dataset and verify ownership
     const { data: dataset, error: datasetError } = await supabase
@@ -204,6 +227,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       ml_readiness_score: mlReadiness.overallScore
     })
 
+    // Dispatch in-app notification
+    await createNotification({
+      userId: user.id,
+      title: 'Transformation Applied',
+      message: `Applied ${transformations.length} transformation(s) to dataset "${dataset.name}". New version: V${newVersion}.`,
+      type: 'transformation_success',
+    }).catch(() => {})
+
     return NextResponse.json({
       success: true,
       rowsBefore,
@@ -216,7 +247,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         name: updatedDataset.name,
         current_version: updatedDataset.current_version,
         row_count: updatedDataset.row_count,
-        column_count: updatedDataset.column_count
+        column_count: updatedDataset.column_count,
+        column_metadata: updatedDataset.column_metadata,
+        sample_data: updatedDataset.sample_data,
       }
     })
 

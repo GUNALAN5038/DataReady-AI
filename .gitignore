@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -10,8 +10,14 @@
 !.yarn/releases
 !.yarn/versions
 
+# mobile & expo
+.expo/
+*.apk
+*.aab
+
 # testing
 /coverage
+testing/
 
 # next.js
 /.next/
@@ -45,6 +51,8 @@ next-env.d.ts
 # local logs and transcripts
 transcript_*.txt
 *.log
+git_log_dump.txt
+scratch/
 
 # backup files
 *.backup

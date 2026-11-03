@@ -27,7 +27,7 @@ export function detectOutliers(data: Record<string, unknown>[], columns: string[
         const raw = data[i][col]
         if (!isMissing(raw)) {
           const num = Number(raw)
-          if (!isNaN(num)) {
+          if (!isNaN(num) && isFinite(num)) {
             numericData.push({ val: num, index: i })
           }
         }

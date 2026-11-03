@@ -1,0 +1,43 @@
+name: Complete Testing Summary
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Web E2E Testing (Selenium)", "Android Appium E2E Testing", "API Baseline & Load Testing (k6)"]
+    types: [completed]
+  push:
+    branches: [main, feat/*]
+
+jobs:
+  testing-summary:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Download Artifacts (if triggered via workflow_run)
+        if: github.event_name == 'workflow_run'
+        uses: actions/download-artifact@v4
+        with:
+          path: reports/final-testing/
+        continue-on-error: true
+
+      - name: Generate Consolidated Step Summary
+        if: always()
+        run: node scripts/consolidate-testing-summary.js
+
+      - name: Upload Consolidated Testing Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: complete-testing-artifacts
+          path: |
+            reports/final-testing/
+            DataReady_AI_Selenium/reports/
+            DataReady_AI_Appium/reports/
+            DataReady_AI_LoadTesting/reports/

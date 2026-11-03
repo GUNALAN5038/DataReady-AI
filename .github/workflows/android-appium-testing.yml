@@ -1,0 +1,48 @@
+name: Android Appium E2E Testing
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main, feat/*]
+    paths:
+      - 'mobile/**'
+      - 'DataReady_AI_Appium/**'
+
+jobs:
+  appium-android-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Android Testing Dependencies
+        working-directory: DataReady_AI_Appium
+        run: |
+          npm install --legacy-peer-deps
+
+      - name: Execute Android Appium Test Runner
+        working-directory: DataReady_AI_Appium
+        run: |
+          node scripts/run-android-tests.js
+
+      - name: Upload Android Test Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-appium-reports
+          path: |
+            DataReady_AI_Appium/reports/
+            reports/final-testing/DataReadyAI_Android_E2E_Report.xlsx
+            reports/final-testing/android-e2e.html
+            reports/final-testing/android-summary.json
+            reports/final-testing/screenshots/android/
+
+      - name: Generate GitHub Step Summary
+        if: always()
+        run: |
+          node scripts/consolidate-testing-summary.js

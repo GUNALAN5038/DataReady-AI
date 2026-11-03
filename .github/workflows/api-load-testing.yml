@@ -1,0 +1,70 @@
+name: API Baseline & Load Testing (k6)
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main, feat/*]
+    paths:
+      - 'app/api/**'
+      - 'DataReady_AI_LoadTesting/**'
+
+jobs:
+  k6-load-testing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Load Testing Dependencies
+        working-directory: DataReady_AI_LoadTesting
+        run: npm install --legacy-peer-deps
+
+      - name: Setup k6
+        uses: grafana/setup-k6-action@v1
+
+      - name: Start Next.js Server
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.placeholder' }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.placeholder' }}
+          API_KEY_ENCRYPTION_KEY: ${{ secrets.API_KEY_ENCRYPTION_KEY || 'dr_test_encryption_key_32_characters_long!' }}
+          E2E_TEST_SESSION_TOKEN: ${{ secrets.E2E_TEST_SESSION_TOKEN || 'dr_ci_session_token_authorized_2026' }}
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL || '' }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD || '' }}
+        run: |
+          npm ci
+          npm run build
+          npm run start &
+          npx wait-on tcp:3000 --timeout 60000
+
+      - name: Execute k6 Load Test
+        working-directory: DataReady_AI_LoadTesting
+        env:
+          K6_VUS: 100
+          K6_DURATION: 1m
+          BASE_URL: http://localhost:3000
+          E2E_TEST_SESSION_TOKEN: ${{ secrets.E2E_TEST_SESSION_TOKEN || 'dr_ci_session_token_authorized_2026' }}
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL || '' }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD || '' }}
+        run: node scripts/run-load-test.js
+
+      - name: Upload Load Testing Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-load-testing-reports
+          path: |
+            DataReady_AI_LoadTesting/reports/
+            reports/final-testing/DataReadyAI_Load_Test_Report.xlsx
+            reports/final-testing/load-testing.html
+            reports/final-testing/load-summary.json
+
+      - name: Generate GitHub Step Summary
+        if: always()
+        run: |
+          node scripts/consolidate-testing-summary.js

@@ -31,13 +31,23 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  const configuredToken = process.env.E2E_TEST_SESSION_TOKEN
+  const testSessionCookie = request.cookies.get('dataready-e2e-session')?.value
+  const isTestAuthed = Boolean(
+    configuredToken &&
+    configuredToken.trim().length > 0 &&
+    testSessionCookie &&
+    testSessionCookie === configuredToken
+  )
+
   const pathname = request.nextUrl.pathname
+  const isApiRoute = pathname.startsWith('/api')
   const isAuthCallback = pathname.startsWith('/auth/callback')
   const isResetPassword = pathname.startsWith('/reset-password')
-  const isAuthEntryRoute = pathname.startsWith('/login') || pathname.startsWith('/signup') || pathname.startsWith('/forgot-password')
-  const isPublicRoute = isAuthEntryRoute || isResetPassword || isAuthCallback || pathname === '/'
+  const isAuthEntryRoute = pathname.startsWith('/login') || pathname.startsWith('/signup') || pathname.startsWith('/forgot-password') || pathname.startsWith('/verify-otp')
+  const isPublicRoute = isAuthEntryRoute || isResetPassword || isAuthCallback || pathname === '/' || isApiRoute
 
-  if (!user && !isPublicRoute) {
+  if (!user && !isTestAuthed && !isPublicRoute) {
     // no user, redirect to login page
     const url = request.nextUrl.clone()
     url.pathname = '/login'
@@ -46,11 +56,17 @@ export async function updateSession(request: NextRequest) {
 
   // Redirect authenticated users away from login/signup/forgot-password,
   // but allow them to remain on /reset-password to update their password.
-  if (user && isAuthEntryRoute) {
+  if ((user || isTestAuthed) && isAuthEntryRoute) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)
   }
+
+  // Security Headers (Defense-in-depth)
+  supabaseResponse.headers.set('X-Content-Type-Options', 'nosniff')
+  supabaseResponse.headers.set('X-Frame-Options', 'DENY')
+  supabaseResponse.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+  supabaseResponse.headers.set('X-XSS-Protection', '1; mode=block')
 
   return supabaseResponse
 }

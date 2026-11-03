@@ -1,0 +1,23 @@
+{
+  "name": "dataready-ai-appium",
+  "version": "1.0.0",
+  "description": "Appium Mobile Automation Suite for DataReady AI Android App",
+  "private": true,
+  "main": "scripts/run-android-tests.js",
+  "scripts": {
+    "test": "node scripts/run-android-tests.js",
+    "test:wdio": "wdio run wdio.conf.js",
+    "install:apk": "node scripts/install-apk.js"
+  },
+  "dependencies": {
+    "appium": "^2.11.3",
+    "exceljs": "^4.4.0",
+    "webdriverio": "^8.38.0"
+  },
+  "devDependencies": {
+    "@wdio/cli": "^8.38.0",
+    "@wdio/local-runner": "^8.38.0",
+    "@wdio/mocha-framework": "^8.38.0",
+    "@wdio/spec-reporter": "^8.38.0"
+  }
+}

@@ -2,8 +2,17 @@ import crypto from 'crypto'
 
 const FALLBACK_KEY = 'dataready-ai-secure-encryption-key-32b'
 
-function getDerivedKey(): Buffer {
-  const secret = process.env.API_KEY_ENCRYPTION_KEY || FALLBACK_KEY
+export class DecryptionError extends Error {
+  public readonly code: string
+  constructor(message: string = 'Failed to decrypt saved API key. Please re-enter your API key in Settings.') {
+    super(message)
+    this.name = 'DecryptionError'
+    this.code = 'DECRYPTION_FAILED'
+  }
+}
+
+function getDerivedKey(customSecret?: string): Buffer {
+  const secret = customSecret || process.env.API_KEY_ENCRYPTION_KEY || FALLBACK_KEY
   return crypto.createHash('sha256').update(secret).digest()
 }
 
@@ -25,25 +34,54 @@ export function encryptCredential(plainText: string): string {
 
 /**
  * Decrypts AES-256-GCM encrypted credentials.
+ * Supports primary configured secret with fallback decryption for backward compatibility.
  */
 export function decryptCredential(cipherPayload: string): string {
+  if (!cipherPayload || typeof cipherPayload !== 'string') {
+    throw new DecryptionError('Invalid or empty encrypted payload.')
+  }
+
   const parts = cipherPayload.split(':')
   if (parts.length !== 3) {
-    throw new Error('Invalid encrypted payload format.')
+    throw new DecryptionError('Invalid encrypted payload format.')
   }
 
   const [ivHex, tagHex, encryptedHex] = parts
+  if (!ivHex || !tagHex || !encryptedHex) {
+    throw new DecryptionError('Malformed encrypted credential payload.')
+  }
+
   const iv = Buffer.from(ivHex, 'hex')
   const authTag = Buffer.from(tagHex, 'hex')
-  const key = getDerivedKey()
 
-  const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv)
-  decipher.setAuthTag(authTag)
+  // 1. Try decrypting with currently active key
+  const primaryKey = getDerivedKey()
+  try {
+    const decipher = crypto.createDecipheriv('aes-256-gcm', primaryKey, iv)
+    decipher.setAuthTag(authTag)
+    let decrypted = decipher.update(encryptedHex, 'hex', 'utf8')
+    decrypted += decipher.final('utf8')
+    return decrypted
+  } catch {
+    // 2. If API_KEY_ENCRYPTION_KEY is configured and differs from FALLBACK_KEY,
+    // attempt decryption using FALLBACK_KEY for backward compatibility.
+    if (process.env.API_KEY_ENCRYPTION_KEY && process.env.API_KEY_ENCRYPTION_KEY !== FALLBACK_KEY) {
+      try {
+        const fallbackKey = getDerivedKey(FALLBACK_KEY)
+        const decipher = crypto.createDecipheriv('aes-256-gcm', fallbackKey, iv)
+        decipher.setAuthTag(authTag)
+        let decrypted = decipher.update(encryptedHex, 'hex', 'utf8')
+        decrypted += decipher.final('utf8')
+        return decrypted
+      } catch {
+        // Both attempts failed
+      }
+    }
 
-  let decrypted = decipher.update(encryptedHex, 'hex', 'utf8')
-  decrypted += decipher.final('utf8')
-
-  return decrypted
+    throw new DecryptionError(
+      'Failed to decrypt saved API key. Please re-enter your API key in Settings.'
+    )
+  }
 }
 
 /**

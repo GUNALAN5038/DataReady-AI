@@ -1,31 +1,131 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getAuthenticatedUser } from '@/lib/supabase/server'
 import { getAIProvider } from '@/lib/ai/provider'
-import { streamText } from 'ai'
+import { isOffTopicOrRestricted, buildSecureSystemPrompt, SCOPE_RESTRICTION_MESSAGE } from '@/lib/ai/guardrails'
+import { streamText, formatStreamPart } from 'ai'
 import { NextResponse } from 'next/server'
 
 export const maxDuration = 45
 
+function createDirectStreamResponse(text: string, conversationId: string) {
+  const encoder = new TextEncoder()
+  const formattedChunk = formatStreamPart('text', text)
+  const stream = new ReadableStream({
+    start(controller) {
+      controller.enqueue(encoder.encode(formattedChunk))
+      controller.close()
+    },
+  })
+
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'X-Conversation-Id': conversationId,
+      'X-Accel-Buffering': 'no',
+    },
+  })
+}
+
 export async function POST(req: Request) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const supabase = await createClient(req)
+    const user = (await getAuthenticatedUser()) || (await supabase.auth.getUser()).data?.user
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized: Please log in to use AI Chat.' }, { status: 401 })
     }
 
-    const { messages, datasetId } = await req.json().catch(() => ({}))
+    const { messages, datasetId, conversationId: requestedConvId } = await req.json().catch(() => ({}))
 
-    if (!messages || !Array.isArray(messages)) {
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json({ error: 'Invalid messages array.' }, { status: 400 })
     }
 
-    let systemPrompt = `You are DataReady AI, an expert, objective data cleaning and Machine Learning preparation assistant.
-Your goal is to help users understand their dataset quality, diagnostic findings, transformation history, and preparation steps for machine learning.
-Base your explanations strictly on real dataset statistics and metrics provided below. Do not make up non-existent column names or fake numbers.`
+    const latestUserMessage = messages[messages.length - 1]
+    const userPrompt = latestUserMessage?.content || ''
+
+    // 1. Resolve or create conversation
+    let activeConversationId = requestedConvId as string | undefined
+
+    if (activeConversationId) {
+      // Verify conversation belongs to current user
+      const { data: existingConv } = await supabase
+        .from('chat_conversations')
+        .select('id')
+        .eq('id', activeConversationId)
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (!existingConv) {
+        activeConversationId = undefined
+      }
+    }
+
+    if (!activeConversationId) {
+      // Auto-generate title from the first message
+      let generatedTitle = userPrompt.trim().replace(/[\r\n]+/g, ' ')
+      if (generatedTitle.length > 45) {
+        generatedTitle = generatedTitle.slice(0, 42).trim() + '...'
+      }
+      if (!generatedTitle) {
+        generatedTitle = 'New Analysis Session'
+      }
+
+      const { data: newConv, error: newConvError } = await supabase
+        .from('chat_conversations')
+        .insert({
+          user_id: user.id,
+          dataset_id: datasetId || null,
+          title: generatedTitle,
+        })
+        .select('id')
+        .single()
+
+      if (!newConvError && newConv) {
+        activeConversationId = newConv.id
+      }
+    }
+
+    // 2. Persist the user's message
+    if (activeConversationId && latestUserMessage && latestUserMessage.role === 'user') {
+      try {
+        await supabase.from('chat_messages').insert({
+          conversation_id: activeConversationId,
+          user_id: user.id,
+          role: 'user',
+          content: userPrompt,
+        })
+      } catch (saveErr) {
+        console.warn('Failed to save incoming user message:', saveErr)
+      }
+    }
+
+    // 3. Server-side Guardrail & Scope Validation
+    if (isOffTopicOrRestricted(userPrompt)) {
+      // Persist the canned rejection response as an assistant message
+      if (activeConversationId) {
+        try {
+          await supabase.from('chat_messages').insert({
+            conversation_id: activeConversationId,
+            user_id: user.id,
+            role: 'assistant',
+            content: SCOPE_RESTRICTION_MESSAGE,
+          })
+          await supabase
+            .from('chat_conversations')
+            .update({ updated_at: new Date().toISOString() })
+            .eq('id', activeConversationId)
+        } catch (saveErr) {
+          console.warn('Failed to save guardrail assistant message:', saveErr)
+        }
+      }
+
+      return createDirectStreamResponse(SCOPE_RESTRICTION_MESSAGE, activeConversationId || '')
+    }
+
+    // 4. Retrieve Active Dataset Context if datasetId provided
+    let datasetContextString: string | undefined = undefined
 
     if (datasetId) {
-      // 1. Fetch dataset
       const { data: dataset } = await supabase
         .from('datasets')
         .select('*')
@@ -36,7 +136,6 @@ Base your explanations strictly on real dataset statistics and metrics provided 
       if (dataset) {
         const currentVersion = dataset.current_version ?? 0
 
-        // 2. Fetch current full analysis
         const { data: currentAnalysis } = await supabase
           .from('analyses')
           .select('*')
@@ -47,7 +146,6 @@ Base your explanations strictly on real dataset statistics and metrics provided 
           .limit(1)
           .maybeSingle()
 
-        // 3. Fetch initial analysis (v0)
         const { data: initialAnalysis } = await supabase
           .from('analyses')
           .select('*')
@@ -58,7 +156,6 @@ Base your explanations strictly on real dataset statistics and metrics provided 
           .limit(1)
           .maybeSingle()
 
-        // 4. Fetch transformation history
         const { data: transformations } = await supabase
           .from('dataset_transformations')
           .select('*')
@@ -72,7 +169,6 @@ Base your explanations strictly on real dataset statistics and metrics provided 
           return `• Version ${t.new_version} (${t.transformation_type}): affected ${t.affected_rows ?? 0} rows, ${t.affected_columns ?? 0} columns`
         }).join('\n')
 
-        // Build structured context
         const contextPayload = {
           datasetInfo: {
             name: dataset.name,
@@ -100,22 +196,16 @@ Base your explanations strictly on real dataset statistics and metrics provided 
           transformationHistory: historySummary || 'No transformations applied yet (currently at original Version 0).'
         }
 
-        systemPrompt += `\n\n==================================================
-ACTIVE DATASET CONTEXT
-==================================================
-${JSON.stringify(contextPayload, null, 2)}
-
-GUIDANCE FOR ANSWERS:
-- If the user asks what they just transformed or what changes were made, refer directly to the transformation history and metric deltas between Initial and Current metrics.
-- If the user asks whether the dataset improved, compare the initial ML readiness (${initialAnalysis?.ml_readiness_score ?? 'N/A'}) with the current score (${currentAnalysis?.ml_readiness_score ?? 'N/A'}) and cite specific reductions in missing values or duplicate rows.
-- If the user asks what to do next, suggest specific actions from the recommendations or transformation tools (e.g. imputing missing values, removing duplicates, or capping outliers).`
+        datasetContextString = JSON.stringify(contextPayload, null, 2)
       }
     }
 
-    // Pass user.id to getAIProvider so user's encrypted key is prioritized
+    const systemPrompt = buildSecureSystemPrompt(datasetContextString)
+
+    // 5. Initialize AI Model (Google Gemini via user key or system env key)
     let model
     try {
-      model = await getAIProvider(user.id)
+      model = await getAIProvider(user.id, supabase)
     } catch (providerError: unknown) {
       return NextResponse.json(
         { error: providerError instanceof Error ? providerError.message : 'AI provider not configured.' },
@@ -123,25 +213,76 @@ GUIDANCE FOR ANSWERS:
       )
     }
 
+    // 6. Stream completion with persistence on finish
+    const savedConvId = activeConversationId
     const result = await streamText({
       model,
       messages,
       system: systemPrompt,
+      onFinish: async (event) => {
+        try {
+          if (event.text && savedConvId) {
+            await supabase.from('chat_messages').insert({
+              conversation_id: savedConvId,
+              user_id: user.id,
+              role: 'assistant',
+              content: event.text,
+            })
+            await supabase
+              .from('chat_conversations')
+              .update({ updated_at: new Date().toISOString() })
+              .eq('id', savedConvId)
+          }
+        } catch (saveErr) {
+          console.error('Error saving assistant message:', saveErr)
+        }
+      },
     })
 
-    return result.toTextStreamResponse()
+    const streamResponse = result.toAIStreamResponse({
+      headers: savedConvId ? { 'X-Conversation-Id': savedConvId } : undefined,
+    })
+    return streamResponse
 
   } catch (error: unknown) {
     console.error('Chat endpoint error:', error)
-    if (error instanceof Error && error.message?.includes('AI provider not configured')) {
-      return NextResponse.json(
-        { error: 'AI provider not configured. Please add an API key in Settings.' },
-        { status: 503 }
-      )
+
+    let statusCode = 500
+    let userMessage = 'An error occurred while communicating with the AI. Please verify your credentials and try again.'
+
+    if (error instanceof Error) {
+      const msg = error.message
+      const cleanMsg = msg.replace(/https?:\/\/[^\s]+/g, '[URL]').replace(/key=[a-zA-Z0-9_\-]+/gi, 'key=[REDACTED]').trim()
+      const lower = cleanMsg.toLowerCase()
+
+      if (lower.includes('ai provider not configured') || lower.includes('failed to decrypt saved api key')) {
+        statusCode = 503
+        userMessage = cleanMsg
+      } else if (
+        lower.includes('api key not valid') ||
+        lower.includes('api_key_invalid') ||
+        lower.includes('unauthenticated') ||
+        lower.includes('permission_denied')
+      ) {
+        statusCode = 401
+        userMessage = 'Your Google Gemini API key is invalid or unauthorized (401). Please verify and re-enter your key in Settings > AI Keys.'
+      } else if (lower.includes('resource_exhausted') || lower.includes('quota') || lower.includes('rate limit') || lower.includes('429')) {
+        statusCode = 429
+        userMessage = 'Google Gemini API rate limit or quota exceeded (429). Please wait a moment and try again.'
+      } else if (lower.includes('no longer available') || lower.includes('deprecated') || lower.includes('not supported for generatecontent')) {
+        statusCode = 404
+        userMessage = 'The requested Gemini model is discontinued or unsupported (404). Please use a supported model such as gemini-3.6-flash or gemini-3.8-flash.'
+      } else if (lower.includes('not found') || lower.includes('not_found')) {
+        statusCode = 404
+        userMessage = 'The requested Gemini model or endpoint was not found (404). Please try again.'
+      } else if (lower.includes('unavailable') || lower.includes('service unavailable') || lower.includes('503') || lower.includes('502')) {
+        statusCode = 502
+        userMessage = 'Google Gemini service is temporarily unavailable (502). Please try again shortly.'
+      } else {
+        userMessage = cleanMsg || userMessage
+      }
     }
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'An error occurred during AI chat.' },
-      { status: 500 }
-    )
+
+    return NextResponse.json({ error: userMessage }, { status: statusCode })
   }
 }

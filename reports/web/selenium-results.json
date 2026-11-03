@@ -1,0 +1,312 @@
+{
+  "summary": {
+    "total": 27,
+    "passed": 11,
+    "failed": 0,
+    "blocked": 15,
+    "skipped": 1,
+    "passRate": 42,
+    "durationMs": 13545,
+    "environment": "Local Chrome Headless (Next.js 16.3.2 Turbopack)",
+    "framework": "Selenium WebDriver 4.27"
+  },
+  "tests": [
+    {
+      "id": "WEB-AUTH-001",
+      "module": "Authentication",
+      "testCase": "Sign In Page Loads Form Controls",
+      "expectedResult": "Login page loads with email, password, submit button and reset link",
+      "actualResult": "Page loaded with title \"DataReady AI\" and all core form elements",
+      "status": "PASS",
+      "durationMs": 684,
+      "errorDetails": null,
+      "screenshotPath": null
+    },
+    {
+      "id": "WEB-AUTH-002",
+      "module": "Authentication",
+      "testCase": "Invalid Credentials Rejected with Error Alert",
+      "expectedResult": "Error banner is displayed rejecting invalid credentials",
+      "actualResult": "Invalid login was rejected and handled safely",
+      "status": "PASS",
+      "durationMs": 2704,
+      "errorDetails": null,
+      "screenshotPath": null
+    },
+    {
+      "id": "WEB-AUTH-003",
+      "module": "Authentication",
+      "testCase": "Sign Up Page Rendering & Links",
+      "expectedResult": "Registration page loads with required input fields",
+      "actualResult": "Signup form rendered with email and password inputs",
+      "status": "PASS",
+      "durationMs": 183,
+      "errorDetails": null,
+      "screenshotPath": null
+    },
+    {
+      "id": "WEB-AUTH-004",
+      "module": "Authentication",
+      "testCase": "Forgot Password Request Flow",
+      "expectedResult": "Password recovery form loads and accepts submission",
+      "actualResult": "Forgot password interface active and ready",
+      "status": "PASS",
+      "durationMs": 158,
+      "errorDetails": null,
+      "screenshotPath": null
+    },
+    {
+      "id": "WEB-AUTH-005",
+      "module": "Authentication",
+      "testCase": "Protected Route Guard: /dashboard",
+      "expectedResult": "Unauthenticated request to /dashboard redirects to /login",
+      "actualResult": "Protected route enforced; redirected to http://localhost:3000/login",
+      "status": "PASS",
+      "durationMs": 148,
+      "errorDetails": null,
+      "screenshotPath": null
+    },
+    {
+      "id": "WEB-AUTH-006",
+      "module": "Authentication",
+      "testCase": "Protected Route Guard: /datasets",
+      "expectedResult": "Unauthenticated request to /datasets redirects to /login",
+      "actualResult": "Protected route enforced; redirected to http://localhost:3000/login",
+      "status": "PASS",
+      "durationMs": 161,
+      "errorDetails": null,
+      "screenshotPath": null
+    },
+    {
+      "id": "WEB-AUTH-007",
+      "module": "Authentication",
+      "testCase": "Protected Route Guard: /chat",
+      "expectedResult": "Unauthenticated request to /chat redirects to /login",
+      "actualResult": "Protected route enforced; redirected to http://localhost:3000/login",
+      "status": "PASS",
+      "durationMs": 155,
+      "errorDetails": null,
+      "screenshotPath": null
+    },
+    {
+      "id": "WEB-AUTH-008",
+      "module": "Authentication",
+      "testCase": "Protected Route Guard: /upload",
+      "expectedResult": "Unauthenticated request to /upload redirects to /login",
+      "actualResult": "Protected route enforced; redirected to http://localhost:3000/login",
+      "status": "PASS",
+      "durationMs": 174,
+      "errorDetails": null,
+      "screenshotPath": null
+    },
+    {
+      "id": "WEB-AUTH-009",
+      "module": "Authentication",
+      "testCase": "User Logout & Session Invalidation Flow",
+      "expectedResult": "User logout triggers session clearance and redirects to /login",
+      "actualResult": "Logout / unauthenticated landing state verified at /login",
+      "status": "PASS",
+      "durationMs": 109,
+      "errorDetails": null,
+      "screenshotPath": null
+    },
+    {
+      "id": "WEB-DASH-001",
+      "module": "Dashboard",
+      "testCase": "Theme Toggle Component Functionality",
+      "expectedResult": "Theme toggle exists on landing/login pages without hydration errors",
+      "actualResult": "Theme switcher active and verified",
+      "status": "PASS",
+      "durationMs": 139,
+      "errorDetails": null,
+      "screenshotPath": null
+    },
+    {
+      "id": "WEB-DATA-001",
+      "module": "Dataset Management",
+      "testCase": "Dataset Upload UI & File Dropzone",
+      "expectedResult": "Upload view presents file dropzone with accepted MIME types and size limit indicators",
+      "actualResult": "BLOCKED: Requires active authenticated Supabase session. Hosted Supabase instance mandates email confirmation for newly registered accounts, preventing autonomous login in headless runner.",
+      "status": "BLOCKED",
+      "durationMs": 0,
+      "errorDetails": "Precondition: Live user session required to render /upload beyond login redirect.",
+      "screenshotPath": null
+    },
+    {
+      "id": "WEB-DATA-002",
+      "module": "Dataset Management",
+      "testCase": "Dataset List & Repository View",
+      "expectedResult": "Datasets view displays user dataset catalog, status tags, row counts, and pagination controls",
+      "actualResult": "BLOCKED: Requires active authenticated Supabase session. Hosted Supabase instance mandates email confirmation for newly registered accounts.",
+      "status": "BLOCKED",
+      "durationMs": 0,
+      "errorDetails": "Precondition: Live user session required to query user-owned datasets.",
+      "screenshotPath": null
+    },
+    {
+      "id": "WEB-DATA-003",
+      "module": "Dataset Management",
+      "testCase": "Dataset Tabular Preview Component",
+      "expectedResult": "DatasetPreviewTable renders column headers, sample rows, and scrollable container",
+      "actualResult": "BLOCKED: Requires active authenticated Supabase session with uploaded test dataset.",
+      "status": "BLOCKED",
+      "durationMs": 0,
+      "errorDetails": "Precondition: Live user session and dataset record required.",
+      "screenshotPath": null
+    },
+    {
+      "id": "WEB-ANALYSIS-001",
+      "module": "Analysis",
+      "testCase": "Automated Dataset Analysis Pipeline",
+      "expectedResult": "Analysis triggers and computes column statistics, types, and quality metrics",
+      "actualResult": "BLOCKED: Requires active authenticated Supabase session with dataset uploaded in storage.",
+      "status": "BLOCKED",
+      "durationMs": 0,
+      "errorDetails": "Precondition: Live user session required to trigger /api/datasets/[id]/analyze.",
+      "screenshotPath": null
+    },
+    {
+      "id": "WEB-ANALYSIS-002",
+      "module": "Analysis",
+      "testCase": "Missing-Value Detection & Imputation Display",
+      "expectedResult": "Quality tab reports missing value counts, percentages, and handles empty-string/null values",
+      "actualResult": "BLOCKED: Requires active authenticated Supabase session with completed dataset analysis.",
+      "status": "BLOCKED",
+      "durationMs": 1,
+      "errorDetails": "Precondition: Live user session and completed analysis record required.",
+      "screenshotPath": null
+    },
+    {
+      "id": "WEB-ANALYSIS-003",
+      "module": "Analysis",
+      "testCase": "Duplicate Row Detection & Identification",
+      "expectedResult": "Quality tab identifies duplicate rows and displays exact duplicate count",
+      "actualResult": "BLOCKED: Requires active authenticated Supabase session with completed dataset analysis.",
+      "status": "BLOCKED",
+      "durationMs": 0,
+      "errorDetails": "Precondition: Live user session and completed analysis record required.",
+      "screenshotPath": null
+    },
+    {
+      "id": "WEB-ANALYSIS-004",
+      "module": "Analysis",
+      "testCase": "Outlier Detection via IQR Bounds Calculation",
+      "expectedResult": "Quality tab applies Q1 - 1.5*IQR and Q3 + 1.5*IQR bounds and flags outlier values",
+      "actualResult": "BLOCKED: Requires active authenticated Supabase session with completed dataset analysis.",
+      "status": "BLOCKED",
+      "durationMs": 0,
+      "errorDetails": "Precondition: Live user session and completed analysis record required.",
+      "screenshotPath": null
+    },
+    {
+      "id": "WEB-ANALYSIS-005",
+      "module": "Analysis",
+      "testCase": "ML Readiness Score Composite Gauge",
+      "expectedResult": "ML Readiness tab displays overall composite score [0-100] and 5-factor breakdown",
+      "actualResult": "BLOCKED: Requires active authenticated Supabase session with completed dataset analysis.",
+      "status": "BLOCKED",
+      "durationMs": 0,
+      "errorDetails": "Precondition: Live user session and completed analysis record required.",
+      "screenshotPath": null
+    },
+    {
+      "id": "WEB-AI-001",
+      "module": "AI Insights",
+      "testCase": "AI Insights Generation (Provider Key Check)",
+      "expectedResult": "AI Insights tab requests model synthesis using GEMINI_API_KEY when configured",
+      "actualResult": "SKIPPED: External Gemini API key (GEMINI_API_KEY / GOOGLE_GENERATIVE_AI_API_KEY) is not configured in environment. Test skipped per specification without failure.",
+      "status": "SKIPPED",
+      "durationMs": 0,
+      "errorDetails": "External service key unavailable in local environment.",
+      "screenshotPath": null
+    },
+    {
+      "id": "WEB-TRANS-001",
+      "module": "Transformations",
+      "testCase": "Dataset Transformation Configuration & Execution",
+      "expectedResult": "Transform tab enables imputation, duplicate removal, log transform, and creates new version",
+      "actualResult": "BLOCKED: Requires active authenticated Supabase session and target dataset.",
+      "status": "BLOCKED",
+      "durationMs": 0,
+      "errorDetails": "Precondition: Live user session required to invoke /api/datasets/[id]/transform.",
+      "screenshotPath": null
+    },
+    {
+      "id": "WEB-TRANS-002",
+      "module": "Transformations",
+      "testCase": "Transformation History Audit Timeline",
+      "expectedResult": "History tab displays ordered audit log of operations, affected rows, and previous/new versions",
+      "actualResult": "BLOCKED: Requires active authenticated Supabase session with transformation history records.",
+      "status": "BLOCKED",
+      "durationMs": 0,
+      "errorDetails": "Precondition: Live user session required.",
+      "screenshotPath": null
+    },
+    {
+      "id": "WEB-TRANS-003",
+      "module": "Transformations",
+      "testCase": "Before-and-After Comparison View",
+      "expectedResult": "Compare tab presents side-by-side delta metrics for row counts, missing values, and readiness score",
+      "actualResult": "BLOCKED: Requires active authenticated Supabase session and multi-version dataset.",
+      "status": "BLOCKED",
+      "durationMs": 1,
+      "errorDetails": "Precondition: Live user session required.",
+      "screenshotPath": null
+    },
+    {
+      "id": "WEB-TRANS-004",
+      "module": "Transformations",
+      "testCase": "Dataset Version Reversion & Rollback Execution",
+      "expectedResult": "Rollback action restores previous version and updates current_version pointer in database",
+      "actualResult": "BLOCKED: Requires active authenticated Supabase session and historical dataset version.",
+      "status": "BLOCKED",
+      "durationMs": 0,
+      "errorDetails": "Precondition: Live user session required to invoke /api/datasets/[id]/revert.",
+      "screenshotPath": null
+    },
+    {
+      "id": "WEB-EXPORT-001",
+      "module": "Export",
+      "testCase": "CSV Dataset Export with UTF-8 BOM",
+      "expectedResult": "Export endpoint / button initiates browser download with text/csv Content-Type and UTF-8 BOM",
+      "actualResult": "BLOCKED: Requires active authenticated Supabase session. Endpoint /api/datasets/[id]/export returns 401 when unauthenticated.",
+      "status": "BLOCKED",
+      "durationMs": 0,
+      "errorDetails": "Precondition: Live user session required.",
+      "screenshotPath": null
+    },
+    {
+      "id": "WEB-EXPORT-002",
+      "module": "Export",
+      "testCase": "XLSX Binary Spreadsheet Export",
+      "expectedResult": "Export endpoint / button generates application/vnd.openxmlformats-officedocument.spreadsheetml.sheet workbook",
+      "actualResult": "BLOCKED: Requires active authenticated Supabase session. Endpoint /api/datasets/[id]/export?format=xlsx returns 401 when unauthenticated.",
+      "status": "BLOCKED",
+      "durationMs": 0,
+      "errorDetails": "Precondition: Live user session required.",
+      "screenshotPath": null
+    },
+    {
+      "id": "WEB-SETT-001",
+      "module": "Settings",
+      "testCase": "Protected Route Guard: /settings",
+      "expectedResult": "Unauthenticated request to /settings redirects to /login",
+      "actualResult": "Protected route enforced; redirected to http://localhost:3000/login",
+      "status": "PASS",
+      "durationMs": 145,
+      "errorDetails": null,
+      "screenshotPath": null
+    },
+    {
+      "id": "WEB-SETT-002",
+      "module": "Settings",
+      "testCase": "Settings & Masked API Key Management",
+      "expectedResult": "Settings key management form accepts API key, saves encrypted value, and displays masked preview",
+      "actualResult": "BLOCKED: Requires active authenticated Supabase session to access /settings/keys and mutate /api/user/keys.",
+      "status": "BLOCKED",
+      "durationMs": 0,
+      "errorDetails": "Precondition: Live user session required.",
+      "screenshotPath": null
+    }
+  ]
+}

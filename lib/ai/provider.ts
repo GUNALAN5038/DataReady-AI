@@ -6,16 +6,20 @@ import { getGeminiModel } from './gemini'
  * Retrieves the appropriate AI Model instance following the priority:
  * 1. User's decrypted Gemini API key from api_provider_keys table
  * 2. GEMINI_API_KEY or GOOGLE_GENERATIVE_AI_API_KEY from process.env
- * 3. Throws descriptive error if neither is available.
+ * 3. Throws a clear, actionable error if neither is available.
  */
-export async function getAIProvider(userId?: string) {
+export async function getAIProvider(userId?: string, client?: any) {
+  let userKeyError: string | null = null
+
   // 1. If a userId is provided, look for an active user-configured key
   if (userId) {
+    let keyRecord: { id: string; encrypted_key: string } | null = null
+
     try {
-      const supabase = await createClient()
-      const { data: keyRecord } = await supabase
+      const supabase = client || (await createClient())
+      const { data, error: keyQueryError } = await supabase
         .from('api_provider_keys')
-        .select('*')
+        .select('id, encrypted_key')
         .eq('user_id', userId)
         .eq('provider', 'gemini')
         .eq('is_active', true)
@@ -23,28 +27,58 @@ export async function getAIProvider(userId?: string) {
         .limit(1)
         .maybeSingle()
 
-      if (keyRecord && keyRecord.encrypted_key) {
-        const decryptedKey = decryptCredential(keyRecord.encrypted_key)
-        
-        // Update last_used_at asynchronously
-        supabase
-          .from('api_provider_keys')
-          .update({ last_used_at: new Date().toISOString() })
-          .eq('id', keyRecord.id)
-          .then(() => {})
-
-        return getGeminiModel(decryptedKey)
+      if (keyQueryError) {
+        console.warn('Could not query api_provider_keys for user:', keyQueryError.message)
+      } else {
+        keyRecord = data
       }
     } catch (err) {
-      console.warn('Could not retrieve or decrypt user API key:', err)
-      // Fall through to environment key
+      console.warn('Error accessing user API key record:', err)
+    }
+
+    if (keyRecord && keyRecord.encrypted_key) {
+      let decryptedKey: string | null = null
+
+      try {
+        decryptedKey = decryptCredential(keyRecord.encrypted_key)
+      } catch (decryptErr) {
+        console.warn(
+          'Could not decrypt stored user API key (encryption key mismatch or invalid payload):',
+          decryptErr instanceof Error ? decryptErr.message : 'Decryption failed'
+        )
+        userKeyError = 'Failed to decrypt saved API key. Please re-enter your API key in Settings.'
+      }
+
+      // CRITICAL: If decryption failed for a saved key, report decryption error directly.
+      if (userKeyError) {
+        throw new Error(userKeyError)
+      }
+
+      // If decryption succeeded, initialize model with the decrypted key OUTSIDE the decrypt try-catch
+      if (decryptedKey && decryptedKey.trim().length > 0) {
+        // Update last_used_at asynchronously without blocking
+        try {
+          const supabase = client || (await createClient())
+          supabase
+            .from('api_provider_keys')
+            .update({ last_used_at: new Date().toISOString() })
+            .eq('id', keyRecord.id)
+            .then(() => {})
+        } catch {
+          // Non-blocking timestamp update failure
+        }
+
+        // CRITICAL: Call getGeminiModel outside decryption catch block so quota,
+        // model availability, and API key validation errors are not misattributed to decryption!
+        return await getGeminiModel(decryptedKey.trim())
+      }
     }
   }
 
-  // 2. Fall back to application-level environment key
+  // 2. Fall back to application-level environment key when no custom key is saved
   const envKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY
-  if (envKey) {
-    return getGeminiModel(envKey)
+  if (envKey && envKey.trim().length > 0) {
+    return await getGeminiModel(envKey.trim())
   }
 
   // 3. Clear message when no key exists

@@ -1,0 +1,71 @@
+name: Web E2E Testing (Selenium)
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main, feat/*]
+    paths:
+      - 'app/**'
+      - 'components/**'
+      - 'lib/**'
+      - 'DataReady_AI_Selenium/**'
+
+jobs:
+  selenium-web-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Application Dependencies
+        run: npm ci
+
+      - name: Install Selenium Project Dependencies
+        working-directory: DataReady_AI_Selenium
+        run: npm install --legacy-peer-deps
+
+      - name: Start Next.js Application Server
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.placeholder' }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.placeholder' }}
+          API_KEY_ENCRYPTION_KEY: ${{ secrets.API_KEY_ENCRYPTION_KEY || 'dr_test_encryption_key_32_characters_long!' }}
+          E2E_TEST_SESSION_TOKEN: ${{ secrets.E2E_TEST_SESSION_TOKEN || 'dr_ci_session_token_authorized_2026' }}
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL || '' }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD || '' }}
+        run: |
+          npm run build
+          npm run start &
+          npx wait-on tcp:3000 --timeout 60000
+
+      - name: Execute Selenium E2E Suite
+        working-directory: DataReady_AI_Selenium
+        env:
+          BASE_URL: http://localhost:3000
+          E2E_TEST_SESSION_TOKEN: ${{ secrets.E2E_TEST_SESSION_TOKEN || 'dr_ci_session_token_authorized_2026' }}
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL || '' }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD || '' }}
+        run: node run-all-web-tests.js
+
+      - name: Upload Web Test Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-e2e-reports
+          path: |
+            DataReady_AI_Selenium/reports/
+            reports/final-testing/DataReadyAI_Web_E2E_Report.xlsx
+            reports/final-testing/web-e2e.html
+            reports/final-testing/web-summary.json
+            reports/final-testing/screenshots/web/
+
+      - name: Generate GitHub Step Summary
+        if: always()
+        run: |
+          node scripts/consolidate-testing-summary.js

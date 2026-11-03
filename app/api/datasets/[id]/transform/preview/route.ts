@@ -1,10 +1,10 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getAuthenticatedUser } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import * as Papa from 'papaparse'
 import * as XLSX from 'xlsx'
-import { applyTransformations } from '@/lib/analysis/transformations'
+import { applyTransformations, normalizeTransformation } from '@/lib/analysis/transformations'
 import { detectDuplicates } from '@/lib/analysis/duplicates'
-import { TransformationRequest, TransformationPreviewResult } from '@/types/transformations'
+import { TransformationPreviewResult, DatasetTransformation } from '@/types/transformations'
 
 function countMissingCells(data: Record<string, unknown>[], columns: string[]): number {
   let count = 0
@@ -21,21 +21,43 @@ function countMissingCells(data: Record<string, unknown>[], columns: string[]): 
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const supabase = await createClient()
+  const supabase = await createClient(request)
 
   // 1. Authenticate user
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = (await getAuthenticatedUser()) || (await supabase.auth.getUser()).data?.user
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return NextResponse.json({ error: 'Unauthorized: Please log in to preview transformations.' }, { status: 401 })
   }
 
   try {
-    const body = await request.json().catch(() => null) as TransformationRequest | null
-    if (!body || !body.transformations || !Array.isArray(body.transformations) || body.transformations.length === 0) {
+    const body = await request.json().catch(() => null)
+    let rawTransformations: unknown[] = []
+
+    if (body) {
+      if (Array.isArray(body)) {
+        rawTransformations = body
+      } else if (Array.isArray(body.transformations)) {
+        rawTransformations = body.transformations
+      } else if (body.transformation && typeof body.transformation === 'object') {
+        rawTransformations = [body.transformation]
+      } else if (body.action || body.type) {
+        rawTransformations = [body]
+      }
+    }
+
+    if (rawTransformations.length === 0) {
       return NextResponse.json({ error: 'No transformations provided for preview.' }, { status: 400 })
     }
 
-    const { transformations } = body
+    let transformations: DatasetTransformation[] = []
+    try {
+      transformations = rawTransformations.map(normalizeTransformation)
+    } catch (normErr: unknown) {
+      return NextResponse.json(
+        { error: normErr instanceof Error ? normErr.message : 'Invalid transformation request.' },
+        { status: 400 }
+      )
+    }
 
     // 2. Fetch dataset and verify ownership
     const { data: dataset, error: datasetError } = await supabase
@@ -107,12 +129,18 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const missingValuesAfter = countMissingCells(transformedData, newColumns)
     const duplicatesAfter = detectDuplicates(transformedData).duplicateCount
 
-    const previewResponse: TransformationPreviewResult = {
+    const previewResponse: TransformationPreviewResult & {
+      rowCount: number
+      colCount: number
+      previewSample: Record<string, unknown>[]
+    } = {
       success: true,
       rowsBefore,
       rowsAfter,
+      rowCount: rowsAfter, // Alias for mobile client compatibility
       columnsBefore,
       columnsAfter,
+      colCount: columnsAfter, // Alias for mobile client compatibility
       missingValuesBefore,
       missingValuesAfter,
       duplicatesBefore,
@@ -120,6 +148,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       affectedRows,
       affectedColumns,
       samplePreview: transformedData.slice(0, 50),
+      previewSample: transformedData.slice(0, 50), // Alias for mobile client compatibility
       columns: newColumns
     }
 

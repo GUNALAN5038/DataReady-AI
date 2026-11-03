@@ -16,10 +16,13 @@ export async function previewTransformation(
   transformations: TransformationConfig[]
 ): Promise<{ preview?: PreviewResult; error?: string }> {
   const res = await apiRequest<{
-    previewSample: Record<string, unknown>[]
-    rowCount: number
-    colCount: number
-    columns: string[]
+    previewSample?: Record<string, unknown>[]
+    samplePreview?: Record<string, unknown>[]
+    rowCount?: number
+    rowsAfter?: number
+    colCount?: number
+    columnsAfter?: number
+    columns?: string[]
   }>(`/api/datasets/${datasetId}/transform/preview`, {
     method: 'POST',
     body: JSON.stringify({ transformations }),
@@ -29,12 +32,17 @@ export async function previewTransformation(
     return { error: res.error }
   }
 
+  const sample = res.data?.previewSample || res.data?.samplePreview || []
+  const totalRows = res.data?.rowCount ?? res.data?.rowsAfter ?? 0
+  const totalColumns = res.data?.colCount ?? res.data?.columnsAfter ?? 0
+  const columns = res.data?.columns || (sample.length > 0 ? Object.keys(sample[0]) : [])
+
   return {
     preview: {
-      sample: res.data?.previewSample || [],
-      totalRows: res.data?.rowCount || 0,
-      totalColumns: res.data?.colCount || 0,
-      columns: res.data?.columns || [],
+      sample,
+      totalRows,
+      totalColumns,
+      columns,
     },
   }
 }

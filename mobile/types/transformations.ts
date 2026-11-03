@@ -9,6 +9,7 @@ export type TransformationType =
 
 export interface TransformationConfig {
   type: TransformationType
+  action?: string
   columns?: string[]
   renameMap?: Record<string, string>
   imputeStrategy?: 'mean' | 'median' | 'mode' | 'constant'

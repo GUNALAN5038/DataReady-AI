@@ -1,9 +1,11 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
-import { FileSpreadsheet, Info, Hash, Layers } from 'lucide-react'
+import { FileSpreadsheet, Info, Hash, Layers, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
 
 export interface ColumnDefinition {
   name: string
@@ -22,6 +24,7 @@ export interface DatasetPreviewTableProps {
   currentVersion?: number
   className?: string
   compact?: boolean
+  initialPageSize?: number
 }
 
 function normalizeColumns(rawColumns: (string | ColumnDefinition)[]): ColumnDefinition[] {
@@ -72,11 +75,19 @@ export function DatasetPreviewTable({
   currentVersion,
   className,
   compact = false,
+  initialPageSize,
 }: DatasetPreviewTableProps) {
   const columns = normalizeColumns(rawColumns)
   const effectiveTotalRows = totalRows ?? data.length
   const effectiveTotalCols = totalColumns ?? columns.length
   const isSample = effectiveTotalRows > data.length
+
+  const [pageSize, setPageSize] = useState<number>(initialPageSize || (compact ? 10 : 25))
+  const [currentPage, setCurrentPage] = useState<number>(1)
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [data, currentVersion])
 
   if (!columns || columns.length === 0 || !data || data.length === 0) {
     return (
@@ -91,6 +102,12 @@ export function DatasetPreviewTable({
       </div>
     )
   }
+
+  const totalPages = Math.max(1, Math.ceil(data.length / pageSize))
+  const safeCurrentPage = Math.min(currentPage, totalPages)
+  const startIndex = (safeCurrentPage - 1) * pageSize
+  const endIndex = Math.min(startIndex + pageSize, data.length)
+  const displayedRows = data.slice(startIndex, endIndex)
 
   return (
     <div className={cn('flex flex-col border border-border/80 rounded-2xl overflow-hidden bg-card/60 backdrop-blur-xs shadow-xs', className)}>
@@ -166,61 +183,141 @@ export function DatasetPreviewTable({
 
           {/* Table Body with alternating row stripes */}
           <tbody className="divide-y divide-border/50 font-mono">
-            {data.map((row, rowIdx) => (
-              <tr
-                key={rowIdx}
-                className="even:bg-muted/20 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/25 transition-colors duration-100"
-              >
-                {showRowNumbers && (
-                  <td
-                    className={cn(
-                      'px-3 border-r border-border/50 text-muted-foreground/80 font-mono text-[10px] text-center sticky left-0 bg-card/90 dark:bg-zinc-950/90 z-5 select-none',
-                      compact ? 'py-1.5' : 'py-2'
-                    )}
-                  >
-                    {rowIdx + 1}
-                  </td>
-                )}
-                {columns.map((col, colIdx) => {
-                  const val = row[col.name]
-                  const isNullOrUndefined = val === null || val === undefined
-                  const isEmptyString = typeof val === 'string' && val === ''
-
-                  return (
+            {displayedRows.map((row, rowIdx) => {
+              const actualRowNumber = startIndex + rowIdx + 1
+              return (
+                <tr
+                  key={startIndex + rowIdx}
+                  className="even:bg-muted/20 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/25 transition-colors duration-100"
+                >
+                  {showRowNumbers && (
                     <td
-                      key={`${col.name}-${colIdx}`}
                       className={cn(
-                        'px-3.5 border-r border-border/40 last:border-r-0 whitespace-nowrap text-xs text-foreground/90 max-w-[260px] truncate',
+                        'px-3 border-r border-border/50 text-muted-foreground/80 font-mono text-[10px] text-center sticky left-0 bg-card/90 dark:bg-zinc-950/90 z-5 select-none',
                         compact ? 'py-1.5' : 'py-2'
                       )}
-                      title={!isNullOrUndefined ? String(val) : 'null'}
                     >
-                      {isNullOrUndefined ? (
-                        <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-sans font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25 select-none">
-                          null
-                        </span>
-                      ) : isEmptyString ? (
-                        <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-sans font-medium bg-muted text-muted-foreground/80 border border-border/70 select-none">
-                          empty
-                        </span>
-                      ) : (
-                        <span>{String(val)}</span>
-                      )}
+                      {actualRowNumber}
                     </td>
-                  )
-                })}
-              </tr>
-            ))}
+                  )}
+                  {columns.map((col, colIdx) => {
+                    const val = row[col.name]
+                    const isNullOrUndefined = val === null || val === undefined
+                    const isEmptyString = typeof val === 'string' && val === ''
+
+                    return (
+                      <td
+                        key={`${col.name}-${colIdx}`}
+                        className={cn(
+                          'px-3.5 border-r border-border/40 last:border-r-0 whitespace-nowrap text-xs text-foreground/90 max-w-[260px] truncate',
+                          compact ? 'py-1.5' : 'py-2'
+                        )}
+                        title={!isNullOrUndefined ? String(val) : 'null'}
+                      >
+                        {isNullOrUndefined ? (
+                          <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-sans font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25 select-none">
+                            null
+                          </span>
+                        ) : isEmptyString ? (
+                          <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-sans font-medium bg-muted text-muted-foreground/80 border border-border/70 select-none">
+                            empty
+                          </span>
+                        ) : (
+                          <span>{String(val)}</span>
+                        )}
+                      </td>
+                    )
+                  })}
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>
 
+      {/* Pagination & Footer Controls */}
+      <div className="px-4 py-2.5 bg-muted/30 border-t border-border/70 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <span>Rows per page:</span>
+          <Select
+            value={String(pageSize)}
+            onValueChange={(val: string | null) => {
+              if (val) {
+                setPageSize(Number(val))
+                setCurrentPage(1)
+              }
+            }}
+          >
+            <SelectTrigger className="h-7 w-[68px] text-xs rounded-lg bg-background">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="10">10</SelectItem>
+              <SelectItem value="25">25</SelectItem>
+              <SelectItem value="50">50</SelectItem>
+              <SelectItem value="100">100</SelectItem>
+            </SelectContent>
+          </Select>
+          <span className="text-[11px] ml-2">
+            Showing {data.length > 0 ? startIndex + 1 : 0}–{endIndex} of {data.length} preview rows
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(1)}
+            disabled={safeCurrentPage <= 1}
+            className="h-7 w-7 p-0 rounded-lg text-xs"
+            title="First Page"
+          >
+            <ChevronsLeft className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={safeCurrentPage <= 1}
+            className="h-7 w-7 p-0 rounded-lg text-xs"
+            title="Previous Page"
+          >
+            <ChevronLeft className="h-3.5 w-3.5" />
+          </Button>
+
+          <span className="px-2 font-mono text-[11px] font-medium text-foreground">
+            Page {safeCurrentPage} of {totalPages}
+          </span>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            disabled={safeCurrentPage >= totalPages}
+            className="h-7 w-7 p-0 rounded-lg text-xs"
+            title="Next Page"
+          >
+            <ChevronRight className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(totalPages)}
+            disabled={safeCurrentPage >= totalPages}
+            className="h-7 w-7 p-0 rounded-lg text-xs"
+            title="Last Page"
+          >
+            <ChevronsRight className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </div>
+
       {/* Footer Info / Sampling Disclaimer */}
       {isSample && (
-        <div className="px-4 py-2 bg-muted/30 border-t border-border/60 flex items-center gap-2 text-[11px] text-muted-foreground">
+        <div className="px-4 py-1.5 bg-muted/20 border-t border-border/50 flex items-center gap-2 text-[11px] text-muted-foreground">
           <Info className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
           <span>
-            Displaying sample of first <strong>{data.length}</strong> rows of{' '}
+            Preview displays sample of first <strong>{data.length}</strong> rows of{' '}
             <strong>{effectiveTotalRows.toLocaleString()}</strong> total rows. Full dataset is preserved and exported.
           </span>
         </div>

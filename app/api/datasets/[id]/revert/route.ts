@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getAuthenticatedUser } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import * as Papa from 'papaparse'
 import * as XLSX from 'xlsx'
@@ -13,12 +13,12 @@ import { createNotification } from '@/lib/notifications'
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const supabase = await createClient()
+  const supabase = await createClient(request)
 
   // 1. Authenticate user
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = (await getAuthenticatedUser()) || (await supabase.auth.getUser()).data?.user
   if (!user) {
-    return NextResponse.json({ error: 'Not authenticated.' }, { status: 401 })
+    return NextResponse.json({ error: 'Unauthorized: Please log in to revert this dataset.' }, { status: 401 })
   }
 
   try {

@@ -70,15 +70,15 @@ export default function TransformationsScreen() {
   const buildCurrentConfig = (): TransformationConfig => {
     switch (selectedType) {
       case 'remove_duplicates':
-        return { type: 'remove_duplicates' }
+        return { type: 'remove_duplicates', action: 'remove_duplicates' }
       case 'drop_missing':
-        return { type: 'drop_missing' }
+        return { type: 'drop_missing', action: 'drop_missing' }
       case 'impute_missing':
-        return { type: 'impute_missing', imputeStrategy }
+        return { type: 'impute_missing', action: 'impute_missing', imputeStrategy }
       case 'handle_outliers':
-        return { type: 'handle_outliers', outlierStrategy }
+        return { type: 'handle_outliers', action: 'handle_outliers', outlierStrategy }
       default:
-        return { type: selectedType }
+        return { type: selectedType, action: selectedType }
     }
   }
 

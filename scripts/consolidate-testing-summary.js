@@ -87,7 +87,7 @@ function generateConsolidatedSummary() {
     const p90Latency = durationObj['p(90)'] ? durationObj['p(90)'].toFixed(2) : 'N/A'
     const p95Latency = durationObj['p(95)'] ? durationObj['p(95)'].toFixed(2) : 'N/A'
     const maxLatency = durationObj.max ? durationObj.max.toFixed(2) : 'N/A'
-    const thresholdPass = failedRate < 0.05 && (parseFloat(p95Latency) < 2000 || isNaN(parseFloat(p95Latency)))
+    const thresholdPass = failedRate < 0.01 && (parseFloat(p95Latency) < 2000 || isNaN(parseFloat(p95Latency)))
 
     markdown += '| Metric | Recorded Performance | SLA Target | Status |\n'
     markdown += '| :--- | :--- | :--- | :---: |\n'
@@ -98,7 +98,7 @@ function generateConsolidatedSummary() {
     markdown += `| **90th Percentile (p90)** | ${p90Latency} ms | < 1000 ms | ${parseFloat(p90Latency) < 1000 ? '✅ PASS' : '⚠️ WARN'} |\n`
     markdown += `| **95th Percentile (p95)** | ${p95Latency} ms | < 2000 ms | ${parseFloat(p95Latency) < 2000 ? '✅ PASS' : '❌ FAIL'} |\n`
     markdown += `| **Max Latency** | ${maxLatency} ms | System Envelope | ℹ️ |\n`
-    markdown += `| **HTTP Failure Rate** | ${(failedRate * 100).toFixed(2)}% | < 5.0% | ${failedRate < 0.05 ? '✅ PASS' : '❌ FAIL'} |\n`
+    markdown += `| **HTTP Failure Rate** | ${(failedRate * 100).toFixed(2)}% | < 1.0% | ${failedRate < 0.01 ? '✅ PASS' : '❌ FAIL'} |\n`
     markdown += `| **Overall SLA Compliance** | **${thresholdPass ? 'WITHIN SLA TOLERANCE' : 'EXCEEDED SLA'}** | SLA Baseline | **${thresholdPass ? '✅ PASS' : '❌ FAIL'}** |\n\n`
   } else {
     markdown += '> [!NOTE]\n> Load testing JSON metrics not detected in artifact directory.\n\n'

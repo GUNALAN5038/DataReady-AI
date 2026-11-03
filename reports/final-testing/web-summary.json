@@ -1,11 +1,11 @@
 {
-  "timestamp": "2026-11-03T14:58:11.454Z",
+  "timestamp": "2026-11-03T15:35:26.503Z",
   "total": 47,
   "passed": 47,
   "failed": 0,
   "blocked": 0,
   "skipped": 0,
-  "totalDuration": 50961,
+  "totalDuration": 63786,
   "baseUrl": "http://localhost:3000",
   "tests": [
     {
@@ -13,7 +13,7 @@
       "module": "Authentication",
       "description": "Login page loads with form inputs",
       "status": "PASS",
-      "duration": 1227,
+      "duration": 1232,
       "screenshot": "reports/final-testing/screenshots/web/authentication/web_AUTH-001_PASS.png"
     },
     {
@@ -21,7 +21,7 @@
       "module": "Authentication",
       "description": "Protected route redirects unauthenticated user to /login",
       "status": "PASS",
-      "duration": 814,
+      "duration": 834,
       "screenshot": "reports/final-testing/screenshots/web/authentication/web_AUTH-002_PASS.png"
     },
     {
@@ -29,7 +29,7 @@
       "module": "Authentication",
       "description": "Invalid credentials trigger error message or form validation",
       "status": "PASS",
-      "duration": 3079,
+      "duration": 2980,
       "screenshot": "reports/final-testing/screenshots/web/authentication/web_AUTH-003_PASS.png"
     },
     {
@@ -37,7 +37,7 @@
       "module": "Authentication",
       "description": "Authorized session cookie unlocks dashboard access",
       "status": "PASS",
-      "duration": 1263,
+      "duration": 2349,
       "screenshot": "reports/final-testing/screenshots/web/authentication/web_AUTH-004_PASS.png"
     },
     {
@@ -45,7 +45,7 @@
       "module": "Authentication",
       "description": "Clearing session revokes access and redirects to /login",
       "status": "PASS",
-      "duration": 859,
+      "duration": 840,
       "screenshot": "reports/final-testing/screenshots/web/authentication/web_AUTH-005_PASS.png"
     },
     {
@@ -53,7 +53,7 @@
       "module": "Dashboard",
       "description": "Dashboard page loads successfully with authenticated session",
       "status": "PASS",
-      "duration": 872,
+      "duration": 1172,
       "screenshot": "reports/final-testing/screenshots/web/dashboard/web_DASH-001_PASS.png"
     },
     {
@@ -61,7 +61,7 @@
       "module": "Dashboard",
       "description": "Dashboard renders overview metric cards",
       "status": "PASS",
-      "duration": 284,
+      "duration": 247,
       "screenshot": "reports/final-testing/screenshots/web/dashboard/web_DASH-002_PASS.png"
     },
     {
@@ -69,7 +69,7 @@
       "module": "Dashboard",
       "description": "Primary navigation links to Datasets, Settings, and Chat are present",
       "status": "PASS",
-      "duration": 303,
+      "duration": 272,
       "screenshot": "reports/final-testing/screenshots/web/dashboard/web_DASH-003_PASS.png"
     },
     {
@@ -77,7 +77,7 @@
       "module": "Dashboard",
       "description": "Dashboard handles empty/loaded dataset list gracefully",
       "status": "PASS",
-      "duration": 317,
+      "duration": 278,
       "screenshot": "reports/final-testing/screenshots/web/dashboard/web_DASH-004_PASS.png"
     },
     {
@@ -85,7 +85,7 @@
       "module": "Datasets",
       "description": "Datasets management page loads correctly with heading",
       "status": "PASS",
-      "duration": 1278,
+      "duration": 1837,
       "screenshot": "reports/final-testing/screenshots/web/datasets/web_DATA-001_PASS.png"
     },
     {
@@ -93,7 +93,7 @@
       "module": "Datasets",
       "description": "Dataset management UI presents upload action button",
       "status": "PASS",
-      "duration": 266,
+      "duration": 246,
       "screenshot": "reports/final-testing/screenshots/web/datasets/web_DATA-002_PASS.png"
     },
     {
@@ -101,7 +101,7 @@
       "module": "Datasets",
       "description": "Dataset list renders structured dataset cards or empty state container",
       "status": "PASS",
-      "duration": 755,
+      "duration": 1192,
       "screenshot": "reports/final-testing/screenshots/web/datasets/web_DATA-003_PASS.png"
     },
     {
@@ -109,7 +109,7 @@
       "module": "Datasets",
       "description": "Upload view supports tabular formats (CSV/XLSX)",
       "status": "PASS",
-      "duration": 576,
+      "duration": 763,
       "screenshot": "reports/final-testing/screenshots/web/datasets/web_DATA-004_PASS.png"
     },
     {
@@ -117,7 +117,7 @@
       "module": "Analysis",
       "description": "Analysis engine detects missing values and renders completeness rates",
       "status": "PASS",
-      "duration": 1386,
+      "duration": 2250,
       "screenshot": "reports/final-testing/screenshots/web/analysis/web_ANAL-001_PASS.png"
     },
     {
@@ -125,7 +125,7 @@
       "module": "Analysis",
       "description": "Duplicate detection endpoint operates without crash",
       "status": "PASS",
-      "duration": 1020,
+      "duration": 1000,
       "screenshot": "reports/final-testing/screenshots/web/analysis/web_ANAL-002_PASS.png"
     },
     {
@@ -133,7 +133,7 @@
       "module": "Analysis",
       "description": "Outlier detection implements IQR bounds correctly",
       "status": "PASS",
-      "duration": 278,
+      "duration": 246,
       "screenshot": "reports/final-testing/screenshots/web/analysis/web_ANAL-003_PASS.png"
     },
     {
@@ -141,7 +141,7 @@
       "module": "Analysis",
       "description": "ML readiness score renders composite grade and actionable recommendations",
       "status": "PASS",
-      "duration": 273,
+      "duration": 236,
       "screenshot": "reports/final-testing/screenshots/web/analysis/web_ANAL-004_PASS.png"
     },
     {
@@ -149,7 +149,7 @@
       "module": "Transformations",
       "description": "Transformation normalization handles drop_column cleanly",
       "status": "PASS",
-      "duration": 1545,
+      "duration": 3490,
       "screenshot": "reports/final-testing/screenshots/web/transformations/web_TRAN-001_PASS.png"
     },
     {
@@ -157,7 +157,7 @@
       "module": "Transformations",
       "description": "Column renaming validates parameters properly",
       "status": "PASS",
-      "duration": 560,
+      "duration": 794,
       "screenshot": "reports/final-testing/screenshots/web/transformations/web_TRAN-002_PASS.png"
     },
     {
@@ -165,7 +165,7 @@
       "module": "Transformations",
       "description": "Duplicate elimination removes duplicate records while preserving singles",
       "status": "PASS",
-      "duration": 911,
+      "duration": 1138,
       "screenshot": "reports/final-testing/screenshots/web/transformations/web_TRAN-003_PASS.png"
     },
     {
@@ -173,7 +173,7 @@
       "module": "Transformations",
       "description": "Missing value imputation supports mean, median, mode, and custom values",
       "status": "PASS",
-      "duration": 603,
+      "duration": 951,
       "screenshot": "reports/final-testing/screenshots/web/transformations/web_TRAN-004_PASS.png"
     },
     {
@@ -181,7 +181,7 @@
       "module": "Transformations",
       "description": "Outlier capping bounds extreme records to upper/lower fences",
       "status": "PASS",
-      "duration": 851,
+      "duration": 578,
       "screenshot": "reports/final-testing/screenshots/web/transformations/web_TRAN-005_PASS.png"
     },
     {
@@ -189,7 +189,7 @@
       "module": "Transformations",
       "description": "Data type conversion accurately parses numeric, boolean, date, and text types",
       "status": "PASS",
-      "duration": 531,
+      "duration": 569,
       "screenshot": "reports/final-testing/screenshots/web/transformations/web_TRAN-006_PASS.png"
     },
     {
@@ -197,7 +197,7 @@
       "module": "Transformations",
       "description": "Rollback restores previous dataset snapshot non-destructively",
       "status": "PASS",
-      "duration": 800,
+      "duration": 591,
       "screenshot": "reports/final-testing/screenshots/web/transformations/web_TRAN-007_PASS.png"
     },
     {
@@ -205,7 +205,7 @@
       "module": "Export",
       "description": "CSV Export endpoint responds with appropriate status for CSV format",
       "status": "PASS",
-      "duration": 3332,
+      "duration": 4547,
       "screenshot": "reports/final-testing/screenshots/web/export/web_EXPO-001_PASS.png"
     },
     {
@@ -213,7 +213,7 @@
       "module": "Export",
       "description": "XLSX Export endpoint responds with appropriate status for Excel format",
       "status": "PASS",
-      "duration": 848,
+      "duration": 1075,
       "screenshot": "reports/final-testing/screenshots/web/export/web_EXPO-002_PASS.png"
     },
     {
@@ -221,7 +221,7 @@
       "module": "Export",
       "description": "Export endpoint validates format parameter and rejects invalid formats",
       "status": "PASS",
-      "duration": 315,
+      "duration": 264,
       "screenshot": "reports/final-testing/screenshots/web/export/web_EXPO-003_PASS.png"
     },
     {
@@ -229,7 +229,7 @@
       "module": "Export",
       "description": "Export endpoint defaults to CSV and operates decoupled from transformations",
       "status": "PASS",
-      "duration": 726,
+      "duration": 791,
       "screenshot": "reports/final-testing/screenshots/web/export/web_EXPO-004_PASS.png"
     },
     {
@@ -237,7 +237,7 @@
       "module": "AI Insights",
       "description": "AI Insights endpoint handles dataset context without unexpected errors",
       "status": "PASS",
-      "duration": 2391,
+      "duration": 2508,
       "screenshot": "reports/final-testing/screenshots/web/ai-insights/web_AIIN-001_PASS.png"
     },
     {
@@ -245,7 +245,7 @@
       "module": "AI Insights",
       "description": "AI Insights ensures server-side key hydration and never leaks secrets in body",
       "status": "PASS",
-      "duration": 678,
+      "duration": 588,
       "screenshot": "reports/final-testing/screenshots/web/ai-insights/web_AIIN-002_PASS.png"
     },
     {
@@ -253,7 +253,7 @@
       "module": "AI Insights",
       "description": "AI Insights requires authentication and rejects unauthenticated callers with 401",
       "status": "PASS",
-      "duration": 881,
+      "duration": 822,
       "screenshot": "reports/final-testing/screenshots/web/ai-insights/web_AIIN-003_PASS.png"
     },
     {
@@ -261,7 +261,7 @@
       "module": "AI Chat",
       "description": "AI Chat page loads with conversation interface",
       "status": "PASS",
-      "duration": 1624,
+      "duration": 2061,
       "screenshot": "reports/final-testing/screenshots/web/ai-chat/web_AICH-001_PASS.png"
     },
     {
@@ -269,7 +269,7 @@
       "module": "AI Chat",
       "description": "Chat input accepts text and provides message submission control",
       "status": "PASS",
-      "duration": 897,
+      "duration": 839,
       "screenshot": "reports/final-testing/screenshots/web/ai-chat/web_AICH-002_PASS.png"
     },
     {
@@ -277,7 +277,7 @@
       "module": "AI Chat",
       "description": "Conversational endpoint (/api/chat) validates prompt structure",
       "status": "PASS",
-      "duration": 1522,
+      "duration": 1533,
       "screenshot": "reports/final-testing/screenshots/web/ai-chat/web_AICH-003_PASS.png"
     },
     {
@@ -285,7 +285,7 @@
       "module": "AI Chat",
       "description": "Chat message container avoids raw script execution",
       "status": "PASS",
-      "duration": 3615,
+      "duration": 3487,
       "screenshot": "reports/final-testing/screenshots/web/ai-chat/web_AICH-004_PASS.png"
     },
     {
@@ -293,7 +293,7 @@
       "module": "Settings",
       "description": "Settings page loads successfully with configuration tabs",
       "status": "PASS",
-      "duration": 1649,
+      "duration": 3975,
       "screenshot": "reports/final-testing/screenshots/web/settings/web_SETT-001_PASS.png"
     },
     {
@@ -301,7 +301,7 @@
       "module": "Settings",
       "description": "API Keys management tab provides credential configuration controls",
       "status": "PASS",
-      "duration": 395,
+      "duration": 249,
       "screenshot": "reports/final-testing/screenshots/web/settings/web_SETT-002_PASS.png"
     },
     {
@@ -309,7 +309,7 @@
       "module": "Settings",
       "description": "User keys API responds safely and never reveals raw server environment secrets",
       "status": "PASS",
-      "duration": 690,
+      "duration": 1728,
       "screenshot": "reports/final-testing/screenshots/web/settings/web_SETT-003_PASS.png"
     },
     {
@@ -317,7 +317,7 @@
       "module": "Notifications",
       "description": "Notification bell icon and drawer controls are present in navigation",
       "status": "PASS",
-      "duration": 1680,
+      "duration": 2724,
       "screenshot": "reports/final-testing/screenshots/web/notifications/web_NOTI-001_PASS.png"
     },
     {
@@ -325,7 +325,7 @@
       "module": "Notifications",
       "description": "Notification API responds with structured notifications or handles schema",
       "status": "PASS",
-      "duration": 1421,
+      "duration": 1633,
       "screenshot": "reports/final-testing/screenshots/web/notifications/web_NOTI-002_PASS.png"
     },
     {
@@ -333,7 +333,7 @@
       "module": "Security",
       "description": "HTTP responses enforce defense-in-depth security headers",
       "status": "PASS",
-      "duration": 1504,
+      "duration": 1743,
       "screenshot": "reports/final-testing/screenshots/web/security/web_SECU-001_PASS.png"
     },
     {
@@ -341,7 +341,7 @@
       "module": "Security",
       "description": "Browser console does NOT leak Supabase service role keys or raw credentials",
       "status": "PASS",
-      "duration": 297,
+      "duration": 268,
       "screenshot": "reports/final-testing/screenshots/web/security/web_SECU-002_PASS.png"
     },
     {
@@ -349,7 +349,7 @@
       "module": "Security",
       "description": "Cross-user dataset access is blocked by Row Level Security (RLS)",
       "status": "PASS",
-      "duration": 649,
+      "duration": 1526,
       "screenshot": "reports/final-testing/screenshots/web/security/web_SECU-003_PASS.png"
     },
     {
@@ -357,7 +357,7 @@
       "module": "Accessibility",
       "description": "Page includes primary semantic landmarks (<main>, <header>)",
       "status": "PASS",
-      "duration": 1209,
+      "duration": 1482,
       "screenshot": "reports/final-testing/screenshots/web/accessibility/web_ACCE-001_PASS.png"
     },
     {
@@ -365,7 +365,7 @@
       "module": "Accessibility",
       "description": "Viewport meta tag is configured for mobile responsiveness",
       "status": "PASS",
-      "duration": 314,
+      "duration": 264,
       "screenshot": "reports/final-testing/screenshots/web/accessibility/web_ACCE-002_PASS.png"
     },
     {
@@ -373,15 +373,15 @@
       "module": "Accessibility",
       "description": "Interactive buttons provide accessible labels or icons",
       "status": "PASS",
-      "duration": 309,
+      "duration": 291,
       "screenshot": "reports/final-testing/screenshots/web/accessibility/web_ACCE-003_PASS.png"
     },
     {
       "id": "E2E-001",
       "module": "End-to-End",
-      "description": "Full Platform Journey: Auth -> Dashboard -> Datasets -> Chat -> Settings",
+      "description": "Full Platform Journey: Auth -> Dashboard -> Datasets -> Chat -> Settings -> Logout",
       "status": "PASS",
-      "duration": 3170,
+      "duration": 3094,
       "screenshot": "reports/final-testing/screenshots/web/end-to-end/web_E2E-001_PASS.png"
     }
   ]

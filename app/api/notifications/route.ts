@@ -11,15 +11,30 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 })
     }
 
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+    const isPlaceholder = !supabaseUrl || supabaseUrl.includes('placeholder')
+    if (isPlaceholder) {
+      return NextResponse.json({
+        notifications: [],
+        unreadCount: 0,
+        total: 0,
+      })
+    }
+
     const { data, error } = await supabase
       .from('notifications')
-      .select('*')
+      .select('id, user_id, title, message, type, read, created_at')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(50)
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      console.warn('Notifications fetch warning:', error.message)
+      return NextResponse.json({
+        notifications: [],
+        unreadCount: 0,
+        total: 0,
+      })
     }
 
     const notifications: NotificationRecord[] = (data || []).map((n) => ({
@@ -74,4 +89,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
-

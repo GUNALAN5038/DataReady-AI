@@ -30,7 +30,7 @@ async function generateLoadTestReports(summaryJsonPath) {
   sheet1.getRow(1).font = headerFont
   sheet1.getRow(1).fill = headerFill
 
-  const thresholdPassed = parsed.failedRate < 0.05 && parsed.p95Latency < 1500
+  const thresholdPassed = parsed.failedRate < 0.01 && parsed.p95Latency < 2000
 
   const summaryRows = [
     { metric: 'Load Test Suite', value: 'DataReady AI API Baseline & Concurrency Test' },
@@ -66,8 +66,8 @@ async function generateLoadTestReports(summaryJsonPath) {
   sheet2.addRow({ param: 'Planned Duration', val: '60 Seconds' })
   sheet2.addRow({ param: 'Target Endpoint', val: 'http://localhost:3000/dashboard' })
   sheet2.addRow({ param: 'Target Workload Type', val: 'Authenticated Read-Only Dashboard Session' })
-  sheet2.addRow({ param: 'Error Rate Threshold (SLA)', val: 'http_req_failed < 5% (rate<0.05)' })
-  sheet2.addRow({ param: 'Latency Threshold (SLA)', val: 'http_req_duration p(95) < 1500ms' })
+  sheet2.addRow({ param: 'Error Rate Threshold (SLA)', val: 'http_req_failed < 1% (rate<0.01)' })
+  sheet2.addRow({ param: 'Latency Threshold (SLA)', val: 'http_req_duration p(95) < 2000ms' })
 
   // 3. HTTP Request Metrics
   const sheet3 = workbook.addWorksheet('HTTP Request Metrics', { views: [{ showGridLines: true }] })

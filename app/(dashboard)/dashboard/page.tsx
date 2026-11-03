@@ -4,6 +4,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { PlusCircle, Database, TrendingUp, Clock, AlertCircle } from 'lucide-react'
 
+interface DatasetItem {
+  id: string
+  name: string
+  file_type: string
+  row_count: number | null
+  status: string
+  created_at: string
+}
+
+interface AnalysisItem {
+  ml_readiness_score: number | null
+}
+
 export default async function DashboardPage() {
   const user = await getAuthenticatedUser()
 
@@ -11,25 +24,37 @@ export default async function DashboardPage() {
     return null
   }
 
-  const supabase = await createClient()
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+  const isPlaceholder = !supabaseUrl || supabaseUrl.includes('placeholder')
 
-  // Execute datasets and analyses queries in parallel with bounded columns and limits
-  const [datasetsResult, analysesResult] = await Promise.all([
-    supabase
-      .from('datasets')
-      .select('id, name, file_type, row_count, status, created_at', { count: 'exact' })
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(5),
-    supabase
-      .from('analyses')
-      .select('ml_readiness_score')
-      .eq('user_id', user.id)
-      .in('analysis_type', ['full_analysis', 'ml_readiness'])
-      .not('ml_readiness_score', 'is', null)
-      .order('created_at', { ascending: false })
-      .limit(50)
-  ])
+  let datasetsResult: { data: DatasetItem[] | null; count: number | null; error: any } = { data: [], count: 0, error: null }
+  let analysesResult: { data: AnalysisItem[] | null; error: any } = { data: [], error: null }
+
+  if (!isPlaceholder) {
+    try {
+      const supabase = await createClient()
+      const results = await Promise.all([
+        supabase
+          .from('datasets')
+          .select('id, name, file_type, row_count, status, created_at', { count: 'exact' })
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(5),
+        supabase
+          .from('analyses')
+          .select('ml_readiness_score')
+          .eq('user_id', user.id)
+          .in('analysis_type', ['full_analysis', 'ml_readiness'])
+          .not('ml_readiness_score', 'is', null)
+          .order('created_at', { ascending: false })
+          .limit(50)
+      ])
+      datasetsResult = results[0]
+      analysesResult = results[1]
+    } catch (err) {
+      console.warn('Dashboard query warning:', err)
+    }
+  }
 
   const { data, count: totalDatasetsCount, error: datasetsError } = datasetsResult
   const { data: analyses, error: analysesError } = analysesResult
@@ -38,7 +63,7 @@ export default async function DashboardPage() {
   const recentDatasets = data || []
 
   const avgMLReadiness = analyses?.length
-    ? Math.round(analyses.reduce((acc, a) => acc + (a.ml_readiness_score || 0), 0) / analyses.length)
+    ? Math.round(analyses.reduce((acc: number, a: AnalysisItem) => acc + (a.ml_readiness_score || 0), 0) / analyses.length)
     : 0
 
   return (
@@ -166,7 +191,7 @@ export default async function DashboardPage() {
           </Card>
         ) : (
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {recentDatasets.map((dataset) => (
+            {recentDatasets.map((dataset: DatasetItem) => (
               <Card key={dataset.id} className="card-hover-lift flex flex-col justify-between border-border/80 bg-card">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between gap-2">

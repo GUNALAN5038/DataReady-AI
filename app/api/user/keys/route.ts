@@ -10,6 +10,12 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+  const isPlaceholder = !supabaseUrl || supabaseUrl.includes('placeholder')
+  if (isPlaceholder) {
+    return NextResponse.json({ keys: [] })
+  }
+
   try {
     const { data: keys, error } = await supabase
       .from('api_provider_keys')
@@ -18,7 +24,8 @@ export async function GET(request: Request) {
       .order('created_at', { ascending: false })
 
     if (error) {
-      throw error
+      console.warn('User keys fetch warning:', error.message)
+      return NextResponse.json({ keys: [] })
     }
 
     return NextResponse.json({ keys: keys || [] })

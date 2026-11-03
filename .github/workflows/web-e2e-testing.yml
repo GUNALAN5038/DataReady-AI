@@ -37,6 +37,8 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.placeholder' }}
           API_KEY_ENCRYPTION_KEY: ${{ secrets.API_KEY_ENCRYPTION_KEY || 'dr_test_encryption_key_32_characters_long!' }}
           E2E_TEST_SESSION_TOKEN: ${{ secrets.E2E_TEST_SESSION_TOKEN || 'dr_ci_session_token_authorized_2026' }}
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL || '' }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD || '' }}
         run: |
           npm run build
           npm run start &
@@ -47,6 +49,8 @@ jobs:
         env:
           BASE_URL: http://localhost:3000
           E2E_TEST_SESSION_TOKEN: ${{ secrets.E2E_TEST_SESSION_TOKEN || 'dr_ci_session_token_authorized_2026' }}
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL || '' }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD || '' }}
         run: node run-all-web-tests.js
 
       - name: Upload Web Test Reports

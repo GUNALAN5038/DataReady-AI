@@ -11,17 +11,57 @@ const ROOT_DIR = path.resolve(__dirname, '../../')
 
 /**
  * Sets the authorized E2E test session cookie into the browser context.
+ * Prioritizes real Supabase authentication when TEST_USER_EMAIL and TEST_USER_PASSWORD
+ * are provided; otherwise uses the configured E2E_TEST_SESSION_TOKEN.
+ * Throws an explicit configuration error if neither is configured.
  */
-async function setAuthenticatedSession(driver, baseUrl, token = 'dr_authorized_test_session_token_2026') {
-  await driver.get(`${baseUrl}/login`)
-  await driver.manage().addCookie({
-    name: 'dataready-e2e-session',
-    value: token,
-    path: '/',
-    domain: new URL(baseUrl).hostname,
-    secure: false,
-    httpOnly: false,
-  })
+async function setAuthenticatedSession(driver, baseUrl, explicitToken) {
+  const activeToken = explicitToken || process.env.E2E_TEST_SESSION_TOKEN
+
+  // 1. Real Supabase Authentication Flow via UI if credentials provided
+  const testEmail = process.env.TEST_USER_EMAIL
+  const testPassword = process.env.TEST_USER_PASSWORD
+
+  if (testEmail && testPassword && !explicitToken) {
+    try {
+      await driver.get(`${baseUrl}/login`)
+      await driver.wait(until.elementLocated(By.css('input[type="email"], input[name="email"]')), 10000)
+      const emailInput = await driver.findElement(By.css('input[type="email"], input[name="email"]'))
+      const passInput = await driver.findElement(By.css('input[type="password"], input[name="password"]'))
+      await emailInput.clear()
+      await emailInput.sendKeys(testEmail)
+      await passInput.clear()
+      await passInput.sendKeys(testPassword)
+
+      const submitBtn = await driver.findElement(By.css('button[type="submit"]'))
+      await submitBtn.click()
+
+      await driver.wait(until.urlContains('/dashboard'), 10000)
+      return
+    } catch (err) {
+      console.warn(`[Auth Helper Notification] Real UI login attempt failed: ${err.message}. Checking token configuration...`)
+    }
+  }
+
+  // 2. Authorized CI Test Session Token
+  if (activeToken && activeToken.trim().length > 0) {
+    await driver.get(`${baseUrl}/login`)
+    await driver.manage().addCookie({
+      name: 'dataready-e2e-session',
+      value: activeToken.trim(),
+      path: '/',
+      domain: new URL(baseUrl).hostname,
+      secure: false,
+      httpOnly: false,
+    })
+    return
+  }
+
+  // 3. Explicit Configuration Error when neither is configured
+  throw new Error(
+    '[Authentication Configuration Error] No valid test credentials or E2E_TEST_SESSION_TOKEN found in environment. ' +
+    'Please set TEST_USER_EMAIL & TEST_USER_PASSWORD, or configure E2E_TEST_SESSION_TOKEN in environment / GitHub Secrets.'
+  )
 }
 
 /**
